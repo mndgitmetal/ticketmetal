@@ -36,19 +36,19 @@ const EventDetails: React.FC = () => {
       // Simulação de dados - em produção, fazer chamada para API
       const mockEvent: Event = {
         id: 1,
-        title: 'Festival de Música 2024',
-        description: 'O maior festival de música do ano com artistas nacionais e internacionais. Uma experiência única com os melhores shows, food trucks, e muito mais!',
+        title: 'METAL FEST 2024',
+        description: 'O maior festival de metal do ano com bandas lendárias e novas revelações do cenário underground. Uma experiência brutal com os melhores shows, food trucks metal, e muito mais headbanging!',
         date: '2024-03-15T20:00:00',
-        location: 'Parque da Cidade',
-        address: 'Av. Paulista, 1000',
+        location: 'Arena Underground',
+        address: 'Av. Metal, 666',
         city: 'São Paulo',
         state: 'SP',
-        price: 50.00,
+        price: 80.00,
         image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800',
         ticketsSold: 450,
         maxTickets: 500,
-        rating: 4.8,
-        organizer: 'Eventos SP',
+        rating: 4.9,
+        organizer: 'Metal Productions',
         salesEndDate: '2024-03-14T23:59:59'
       };
       
@@ -87,19 +87,19 @@ const EventDetails: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600"></div>
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Evento não encontrado</h2>
+          <h2 className="text-2xl font-black metal-text text-red-400 mb-4">EVENTO NÃO ENCONTRADO</h2>
           <Link to="/events" className="btn-primary">
-            Voltar para Eventos
+            VOLTAR PARA EVENTOS
           </Link>
         </div>
       </div>
@@ -111,16 +111,16 @@ const EventDetails: React.FC = () => {
   const isSalesActive = new Date() < new Date(event.salesEndDate);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-black to-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <nav className="mb-8">
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <Link to="/" className="hover:text-blue-600">Início</Link>
-            <span>/</span>
-            <Link to="/events" className="hover:text-blue-600">Eventos</Link>
-            <span>/</span>
-            <span className="text-gray-900">{event.title}</span>
+          <div className="flex items-center space-x-2 text-sm text-gray-300">
+            <Link to="/" className="hover:text-red-400 transition-colors duration-300" style={{ fontFamily: 'Rajdhani, sans-serif' }}>INÍCIO</Link>
+            <span className="text-red-400">/</span>
+            <Link to="/events" className="hover:text-red-400 transition-colors duration-300" style={{ fontFamily: 'Rajdhani, sans-serif' }}>EVENTOS</Link>
+            <span className="text-red-400">/</span>
+            <span className="text-gray-300 metal-text">{event.title}</span>
           </div>
         </nav>
 
@@ -134,31 +134,31 @@ const EventDetails: React.FC = () => {
                   alt={event.title}
                   className="w-full h-64 md:h-80 object-cover rounded-lg"
                 />
-                <div className="absolute top-4 right-4 bg-white bg-opacity-90 px-3 py-1 rounded-full flex items-center space-x-1">
-                  <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                  <span className="text-sm font-medium">{event.rating}</span>
+                <div className="absolute top-4 right-4 bg-black/80 px-3 py-1 rounded-full flex items-center space-x-1 metal-border">
+                  <Star className="w-4 h-4 text-red-400 fill-current" />
+                  <span className="text-sm font-bold text-red-400">{event.rating}</span>
                 </div>
                 <button
                   onClick={handleShare}
-                  className="absolute top-4 left-4 bg-white bg-opacity-90 p-2 rounded-full hover:bg-opacity-100 transition-all duration-200"
+                  className="absolute top-4 left-4 bg-black/80 p-2 rounded-full hover:bg-black transition-all duration-300 metal-border"
                 >
-                  <Share2 className="w-5 h-5 text-gray-700" />
+                  <Share2 className="w-5 h-5 text-red-400" />
                 </button>
               </div>
 
               <div className="space-y-6">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-4">{event.title}</h1>
-                  <p className="text-gray-600 text-lg leading-relaxed">{event.description}</p>
+                  <h1 className="text-4xl font-black metal-text text-red-400 mb-4">{event.title}</h1>
+                  <p className="text-gray-300 text-lg leading-relaxed" style={{ fontFamily: 'Rajdhani, sans-serif' }}>{event.description}</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div className="flex items-center space-x-3">
-                      <Calendar className="w-5 h-5 text-gray-500" />
+                      <Calendar className="w-5 h-5 text-red-400" />
                       <div>
-                        <p className="text-sm text-gray-600">Data e Hora</p>
-                        <p className="font-medium text-gray-900">
+                        <p className="text-sm text-gray-300 font-bold" style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase' }}>DATA E HORA</p>
+                        <p className="font-bold text-gray-200" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
                           {new Date(event.date).toLocaleDateString('pt-BR', {
                             weekday: 'long',
                             day: '2-digit',
@@ -172,30 +172,30 @@ const EventDetails: React.FC = () => {
                     </div>
 
                     <div className="flex items-center space-x-3">
-                      <MapPin className="w-5 h-5 text-gray-500" />
+                      <MapPin className="w-5 h-5 text-red-400" />
                       <div>
-                        <p className="text-sm text-gray-600">Local</p>
-                        <p className="font-medium text-gray-900">{event.location}</p>
-                        <p className="text-sm text-gray-600">{event.address}</p>
-                        <p className="text-sm text-gray-600">{event.city} - {event.state}</p>
+                        <p className="text-sm text-gray-300 font-bold" style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase' }}>LOCAL</p>
+                        <p className="font-bold text-gray-200" style={{ fontFamily: 'Rajdhani, sans-serif' }}>{event.location}</p>
+                        <p className="text-sm text-gray-400" style={{ fontFamily: 'Rajdhani, sans-serif' }}>{event.address}</p>
+                        <p className="text-sm text-gray-400" style={{ fontFamily: 'Rajdhani, sans-serif' }}>{event.city} - {event.state}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-4">
                     <div className="flex items-center space-x-3">
-                      <Users className="w-5 h-5 text-gray-500" />
+                      <Users className="w-5 h-5 text-red-400" />
                       <div>
-                        <p className="text-sm text-gray-600">Organizador</p>
-                        <p className="font-medium text-gray-900">{event.organizer}</p>
+                        <p className="text-sm text-gray-300 font-bold" style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase' }}>ORGANIZADOR</p>
+                        <p className="font-bold text-gray-200" style={{ fontFamily: 'Rajdhani, sans-serif' }}>{event.organizer}</p>
                       </div>
                     </div>
 
                     <div className="flex items-center space-x-3">
-                      <Clock className="w-5 h-5 text-gray-500" />
+                      <Clock className="w-5 h-5 text-red-400" />
                       <div>
-                        <p className="text-sm text-gray-600">Vendas até</p>
-                        <p className="font-medium text-gray-900">
+                        <p className="text-sm text-gray-300 font-bold" style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase' }}>VENDAS ATÉ</p>
+                        <p className="font-bold text-gray-200" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
                           {new Date(event.salesEndDate).toLocaleDateString('pt-BR', {
                             day: '2-digit',
                             month: '2-digit',
@@ -210,18 +210,18 @@ const EventDetails: React.FC = () => {
                 </div>
 
                 {/* Ticket Availability */}
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg p-4 metal-border">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700">Ingressos Disponíveis</span>
-                    <span className="text-sm text-gray-600">{ticketsAvailable} de {event.maxTickets}</span>
+                    <span className="text-sm font-bold text-gray-300" style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase' }}>INGRESSOS DISPONÍVEIS</span>
+                    <span className="text-sm text-red-400 font-bold">{ticketsAvailable} de {event.maxTickets}</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-700 rounded-full h-2">
                     <div
-                      className="bg-blue-600 h-2 rounded-full"
+                      className="bg-gradient-to-r from-red-600 to-orange-600 h-2 rounded-full"
                       style={{ width: `${occupancyRate}%` }}
                     ></div>
                   </div>
-                  <p className="text-xs text-gray-600 mt-1">
+                  <p className="text-xs text-gray-400 mt-1" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
                     {occupancyRate.toFixed(1)}% dos ingressos vendidos
                   </p>
                 </div>
@@ -233,10 +233,10 @@ const EventDetails: React.FC = () => {
           <div className="lg:col-span-1">
             <div className="card sticky top-8">
               <div className="text-center mb-6">
-                <div className="text-4xl font-bold text-blue-600 mb-2">
+                <div className="text-4xl font-black metal-text text-red-400 mb-2">
                   R$ {event.price.toFixed(2)}
                 </div>
-                <p className="text-gray-600">por ingresso</p>
+                <p className="text-gray-300" style={{ fontFamily: 'Rajdhani, sans-serif' }}>POR INGRESSO</p>
               </div>
 
               {isSalesActive ? (
@@ -246,27 +246,27 @@ const EventDetails: React.FC = () => {
                     <div className="flex items-center space-x-3">
                       <button
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="w-10 h-10 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50"
+                        className="w-10 h-10 border border-red-500 rounded-lg flex items-center justify-center hover:bg-red-500 hover:text-black transition-all duration-300 text-red-400 font-bold"
                       >
                         -
                       </button>
-                      <span className="text-lg font-medium w-8 text-center">{quantity}</span>
+                      <span className="text-lg font-bold w-8 text-center text-gray-200">{quantity}</span>
                       <button
                         onClick={() => setQuantity(Math.min(ticketsAvailable, quantity + 1))}
-                        className="w-10 h-10 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50"
+                        className="w-10 h-10 border border-red-500 rounded-lg flex items-center justify-center hover:bg-red-500 hover:text-black transition-all duration-300 text-red-400 font-bold"
                       >
                         +
                       </button>
                     </div>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Máximo: {ticketsAvailable} ingressos
+                    <p className="text-sm text-gray-400 mt-1" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
+                      MÁXIMO: {ticketsAvailable} INGRESSOS
                     </p>
                   </div>
 
-                  <div className="border-t pt-4">
+                  <div className="border-t border-red-500/30 pt-4">
                     <div className="flex justify-between items-center mb-4">
-                      <span className="text-lg font-medium">Total:</span>
-                      <span className="text-2xl font-bold text-blue-600">
+                      <span className="text-lg font-bold text-gray-300" style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase' }}>TOTAL:</span>
+                      <span className="text-2xl font-black metal-text text-red-400">
                         R$ {(event.price * quantity).toFixed(2)}
                       </span>
                     </div>
@@ -275,28 +275,28 @@ const EventDetails: React.FC = () => {
                       to={`/checkout/${event.id}?quantity=${quantity}`}
                       className="w-full btn-primary flex items-center justify-center space-x-2"
                     >
-                      <span>Comprar Ingressos</span>
+                      <span>COMPRAR INGRESSOS</span>
                       <ArrowRight className="w-5 h-5" />
                     </Link>
                   </div>
                 </div>
               ) : (
                 <div className="text-center">
-                  <div className="text-red-600 font-medium mb-2">Vendas Encerradas</div>
-                  <p className="text-sm text-gray-600">
+                  <div className="text-red-400 font-black metal-text mb-2">VENDAS ENCERRADAS</div>
+                  <p className="text-sm text-gray-400" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
                     As vendas para este evento foram encerradas
                   </p>
                 </div>
               )}
 
-              <div className="mt-6 pt-6 border-t">
+              <div className="mt-6 pt-6 border-t border-red-500/30">
                 <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-2">Pagamento seguro</p>
+                  <p className="text-sm text-gray-400 mb-2" style={{ fontFamily: 'Rajdhani, sans-serif' }}>PAGAMENTO SEGURO</p>
                   <div className="flex justify-center space-x-2">
-                    <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-r from-red-600 to-orange-600 rounded flex items-center justify-center metal-glow">
                       <span className="text-white text-xs font-bold">MP</span>
                     </div>
-                    <div className="w-8 h-8 bg-green-600 rounded flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-r from-red-600 to-orange-600 rounded flex items-center justify-center metal-glow">
                       <span className="text-white text-xs font-bold">✓</span>
                     </div>
                   </div>

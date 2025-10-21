@@ -35,40 +35,40 @@ const Events: React.FC = () => {
       const mockEvents: Event[] = [
         {
           id: 1,
-          title: 'Festival de Música 2024',
-          description: 'O maior festival de música do ano com artistas nacionais e internacionais.',
+          title: 'METAL FEST 2024',
+          description: 'O maior festival de metal do ano com bandas lendárias e novas revelações do cenário underground.',
           date: '2024-03-15T20:00:00',
-          location: 'Parque da Cidade',
+          location: 'Arena Underground',
           city: 'São Paulo',
           state: 'SP',
-          price: 50.00,
+          price: 80.00,
           image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=500',
           ticketsSold: 450,
           maxTickets: 500,
-          rating: 4.8,
-          category: 'music'
+          rating: 4.9,
+          category: 'metal'
         },
         {
           id: 2,
-          title: 'Workshop de Tecnologia',
-          description: 'Aprenda as últimas tendências em tecnologia e desenvolvimento.',
+          title: 'DEATH METAL WORKSHOP',
+          description: 'Aprenda as técnicas mais brutais de guitarra e bateria com mestres do death metal.',
           date: '2024-03-20T14:00:00',
-          location: 'Centro de Convenções',
+          location: 'Studio Hell',
           city: 'Rio de Janeiro',
           state: 'RJ',
-          price: 30.00,
+          price: 60.00,
           image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=500',
           ticketsSold: 120,
           maxTickets: 150,
-          rating: 4.6,
-          category: 'tech'
+          rating: 4.8,
+          category: 'workshop'
         },
         {
           id: 3,
-          title: 'Conferência de Negócios',
-          description: 'Networking e palestras sobre empreendedorismo e inovação.',
+          title: 'BLACK METAL CONFERENCE',
+          description: 'Discussões sobre filosofia, história e cultura do black metal com especialistas.',
           date: '2024-03-25T09:00:00',
-          location: 'Hotel Plaza',
+          location: 'Crypt Venue',
           city: 'Belo Horizonte',
           state: 'MG',
           price: 40.00,
@@ -76,22 +76,22 @@ const Events: React.FC = () => {
           ticketsSold: 200,
           maxTickets: 300,
           rating: 4.7,
-          category: 'business'
+          category: 'conference'
         },
         {
           id: 4,
-          title: 'Festival de Comida',
-          description: 'Experimente pratos únicos de chefs renomados.',
+          title: 'THRASH METAL NIGHT',
+          description: 'Uma noite inteira de thrash metal com as melhores bandas da cena.',
           date: '2024-04-01T18:00:00',
-          location: 'Praça da Liberdade',
+          location: 'Metal Bar',
           city: 'São Paulo',
           state: 'SP',
-          price: 25.00,
+          price: 35.00,
           image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500',
           ticketsSold: 80,
           maxTickets: 200,
-          rating: 4.5,
-          category: 'food'
+          rating: 4.6,
+          category: 'show'
         }
       ];
       
@@ -104,12 +104,12 @@ const Events: React.FC = () => {
   };
 
   const categories = [
-    { value: 'all', label: 'Todos' },
-    { value: 'music', label: 'Música' },
-    { value: 'tech', label: 'Tecnologia' },
-    { value: 'business', label: 'Negócios' },
-    { value: 'food', label: 'Gastronomia' },
-    { value: 'sports', label: 'Esportes' }
+    { value: 'all', label: 'TODOS' },
+    { value: 'metal', label: 'METAL' },
+    { value: 'workshop', label: 'WORKSHOP' },
+    { value: 'conference', label: 'CONFERÊNCIA' },
+    { value: 'show', label: 'SHOW' },
+    { value: 'festival', label: 'FESTIVAL' }
   ];
 
   const filteredEvents = events.filter(event => {
@@ -137,22 +137,22 @@ const Events: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-black to-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Eventos Disponíveis
+          <h1 className="text-4xl md:text-5xl font-black metal-text text-red-400 mb-4">
+            EVENTOS DISPONÍVEIS
           </h1>
-          <p className="text-xl text-gray-600">
-            Encontre o evento perfeito para você
+          <p className="text-xl text-gray-300" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
+            Encontre os eventos mais brutais para você
           </p>
         </div>
 
@@ -162,10 +162,10 @@ const Events: React.FC = () => {
             {/* Search */}
             <div className="md:col-span-2">
               <div className="relative">
-                <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                <Search className="w-5 h-5 text-red-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Buscar eventos..."
+                  placeholder="BUSCAR EVENTOS..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="input-field pl-10"
@@ -205,41 +205,41 @@ const Events: React.FC = () => {
 
         {/* Results Count */}
         <div className="mb-6">
-          <p className="text-gray-600">
-            {sortedEvents.length} evento{sortedEvents.length !== 1 ? 's' : ''} encontrado{sortedEvents.length !== 1 ? 's' : ''}
+          <p className="text-gray-300 font-bold" style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase' }}>
+            {sortedEvents.length} EVENTO{sortedEvents.length !== 1 ? 'S' : ''} ENCONTRADO{sortedEvents.length !== 1 ? 'S' : ''}
           </p>
         </div>
 
         {/* Events Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {sortedEvents.map((event) => (
-            <div key={event.id} className="card hover:shadow-xl transition-shadow duration-300">
+            <div key={event.id} className="card hover:shadow-xl transition-all duration-300 transform hover:scale-105">
               <div className="relative mb-4">
                 <img
                   src={event.image}
                   alt={event.title}
                   className="w-full h-48 object-cover rounded-lg"
                 />
-                <div className="absolute top-4 right-4 bg-white bg-opacity-90 px-2 py-1 rounded-full flex items-center space-x-1">
-                  <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                  <span className="text-sm font-medium">{event.rating}</span>
+                <div className="absolute top-4 right-4 bg-black/80 px-2 py-1 rounded-full flex items-center space-x-1 metal-border">
+                  <Star className="w-4 h-4 text-red-400 fill-current" />
+                  <span className="text-sm font-bold text-red-400">{event.rating}</span>
                 </div>
-                <div className="absolute bottom-4 left-4 bg-blue-600 text-white px-2 py-1 rounded-full text-sm font-medium">
+                <div className="absolute bottom-4 left-4 bg-gradient-to-r from-red-600 to-orange-600 text-white px-2 py-1 rounded-full text-sm font-bold metal-glow">
                   {categories.find(cat => cat.value === event.category)?.label}
                 </div>
               </div>
 
               <div className="space-y-3">
-                <h3 className="text-xl font-semibold text-gray-900 line-clamp-2">
+                <h3 className="text-xl font-black text-red-400 line-clamp-2 metal-text">
                   {event.title}
                 </h3>
-                <p className="text-gray-600 line-clamp-2">
+                <p className="text-gray-300 line-clamp-2" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
                   {event.description}
                 </p>
 
                 <div className="space-y-2">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Calendar className="w-4 h-4 mr-2" />
+                  <div className="flex items-center text-sm text-gray-300">
+                    <Calendar className="w-4 h-4 mr-2 text-red-400" />
                     {new Date(event.date).toLocaleDateString('pt-BR', {
                       day: '2-digit',
                       month: '2-digit',
@@ -248,25 +248,25 @@ const Events: React.FC = () => {
                       minute: '2-digit'
                     })}
                   </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="w-4 h-4 mr-2" />
+                  <div className="flex items-center text-sm text-gray-300">
+                    <MapPin className="w-4 h-4 mr-2 text-red-400" />
                     {event.location}, {event.city} - {event.state}
                   </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Users className="w-4 h-4 mr-2" />
+                  <div className="flex items-center text-sm text-gray-300">
+                    <Users className="w-4 h-4 mr-2 text-red-400" />
                     {event.ticketsSold}/{event.maxTickets} ingressos vendidos
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between pt-4">
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-2xl font-black metal-text text-red-400">
                     R$ {event.price.toFixed(2)}
                   </div>
                   <Link
                     to={`/events/${event.id}`}
                     className="btn-primary"
                   >
-                    Ver Detalhes
+                    VER DETALHES
                   </Link>
                 </div>
               </div>
@@ -277,13 +277,13 @@ const Events: React.FC = () => {
         {/* No Results */}
         {sortedEvents.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-gray-400 mb-4">
+            <div className="text-red-400 mb-4">
               <Calendar className="w-16 h-16 mx-auto" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Nenhum evento encontrado
+            <h3 className="text-xl font-black metal-text text-red-400 mb-2">
+              NENHUM EVENTO ENCONTRADO
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-300 mb-4" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
               Tente ajustar os filtros de busca
             </p>
             <button
@@ -294,7 +294,7 @@ const Events: React.FC = () => {
               }}
               className="btn-primary"
             >
-              Limpar Filtros
+              LIMPAR FILTROS
             </button>
           </div>
         )}

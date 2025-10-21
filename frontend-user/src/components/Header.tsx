@@ -12,45 +12,48 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="bg-gradient-to-r from-black via-gray-900 to-black border-b border-red-500/30 sticky top-0 z-50 metal-glow">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <span className="text-2xl">🎫</span>
-            <span className="text-xl font-bold text-gray-900">TicketMetal</span>
+            <span className="text-2xl font-black metal-text text-red-400">TICKETMETAL</span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link
               to="/events"
-              className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
+              className="text-gray-300 hover:text-red-400 font-bold transition-all duration-300 hover:scale-105"
+              style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase', letterSpacing: '1px' }}
             >
-              Eventos
+              EVENTOS
             </Link>
             <Link
               to="/about"
-              className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
+              className="text-gray-300 hover:text-red-400 font-bold transition-all duration-300 hover:scale-105"
+              style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase', letterSpacing: '1px' }}
             >
-              Sobre
+              SOBRE
             </Link>
             <Link
               to="/contact"
-              className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
+              className="text-gray-300 hover:text-red-400 font-bold transition-all duration-300 hover:scale-105"
+              style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase', letterSpacing: '1px' }}
             >
-              Contato
+              CONTATO
             </Link>
           </nav>
 
           {/* Search Bar */}
           <div className="hidden lg:flex flex-1 max-w-md mx-8">
             <div className="relative w-full">
-              <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+              <Search className="w-5 h-5 text-red-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Buscar eventos..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="BUSCAR EVENTOS..."
+                className="w-full pl-10 pr-4 py-2 bg-gray-900 border border-red-500/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-200 placeholder-gray-500"
+                style={{ fontFamily: 'Rajdhani, sans-serif' }}
               />
             </div>
           </div>
@@ -61,16 +64,16 @@ const Header: React.FC = () => {
               <>
                 <Link
                   to="/my-tickets"
-                  className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-                  title="Meus Ingressos"
+                  className="p-2 text-gray-300 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-all duration-300 hover:scale-110"
+                  title="MEUS INGRESSOS"
                 >
                   <ShoppingCart className="w-5 h-5" />
                 </Link>
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">U</span>
+                  <div className="w-8 h-8 bg-gradient-to-r from-red-600 to-orange-600 rounded-full flex items-center justify-center metal-glow">
+                    <span className="text-white text-sm font-bold">U</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-700">Usuário</span>
+                  <span className="text-sm font-bold text-gray-300" style={{ fontFamily: 'Orbitron, monospace' }}>USUÁRIO</span>
                 </div>
               </>
             ) : (
@@ -79,14 +82,14 @@ const Header: React.FC = () => {
                 className="btn-primary flex items-center space-x-2"
               >
                 <User className="w-4 h-4" />
-                <span>Entrar</span>
+                <span>ENTRAR</span>
               </Link>
             )}
 
             {/* Mobile Menu Button */}
             <button
               onClick={toggleMenu}
-              className="md:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+              className="md:hidden p-2 text-gray-300 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-all duration-300"
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -95,39 +98,43 @@ const Header: React.FC = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
+          <div className="md:hidden border-t border-red-500/30 py-4 bg-gray-900/95 backdrop-blur-sm">
             <div className="space-y-4">
               <div className="px-4">
                 <div className="relative">
-                  <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                  <Search className="w-5 h-5 text-red-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                   <input
                     type="text"
-                    placeholder="Buscar eventos..."
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="BUSCAR EVENTOS..."
+                    className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-red-500/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-200 placeholder-gray-500"
+                    style={{ fontFamily: 'Rajdhani, sans-serif' }}
                   />
                 </div>
               </div>
               <nav className="space-y-2">
                 <Link
                   to="/events"
-                  className="block px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                  className="block px-4 py-2 text-gray-300 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-all duration-300"
                   onClick={() => setIsMenuOpen(false)}
+                  style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase', letterSpacing: '1px' }}
                 >
-                  Eventos
+                  EVENTOS
                 </Link>
                 <Link
                   to="/about"
-                  className="block px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                  className="block px-4 py-2 text-gray-300 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-all duration-300"
                   onClick={() => setIsMenuOpen(false)}
+                  style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase', letterSpacing: '1px' }}
                 >
-                  Sobre
+                  SOBRE
                 </Link>
                 <Link
                   to="/contact"
-                  className="block px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                  className="block px-4 py-2 text-gray-300 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-all duration-300"
                   onClick={() => setIsMenuOpen(false)}
+                  style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase', letterSpacing: '1px' }}
                 >
-                  Contato
+                  CONTATO
                 </Link>
               </nav>
             </div>
