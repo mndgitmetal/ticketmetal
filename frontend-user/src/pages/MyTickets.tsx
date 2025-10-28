@@ -1,36 +1,55 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, MapPin, Download, QrCode } from 'lucide-react';
+import { apiService } from './api.ts';
 
 const MyTickets: React.FC = () => {
-  // Dados mockados para demonstração
-  const tickets = [
-    {
-      id: 1,
-      eventTitle: 'METAL FEST 2024',
-      date: '2024-03-15T20:00:00',
-      location: 'Arena Underground',
-      city: 'São Paulo',
-      state: 'SP',
-      ticketNumber: 'TM00010001',
-      qrCode: 'TICKETMETAL:abc123def456',
-      price: 80.00,
-      status: 'active',
-      purchasedAt: '2024-01-15T10:30:00'
-    },
-    {
-      id: 2,
-      eventTitle: 'DEATH METAL WORKSHOP',
-      date: '2024-03-20T14:00:00',
-      location: 'Studio Hell',
-      city: 'Rio de Janeiro',
-      state: 'RJ',
-      ticketNumber: 'TM00020001',
-      qrCode: 'TICKETMETAL:xyz789uvw012',
-      price: 60.00,
-      status: 'used',
-      purchasedAt: '2024-01-20T15:45:00'
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTickets();
+  }, []);
+
+  const fetchTickets = async () => {
+    try {
+      setLoading(true);
+      // Por enquanto, usar dados mockados até implementar autenticação
+      const mockTickets = [
+        {
+          id: 1,
+          eventTitle: 'METAL FEST 2024',
+          date: '2024-03-15T20:00:00',
+          location: 'Arena Underground',
+          city: 'São Paulo',
+          state: 'SP',
+          ticketNumber: 'TM00010001',
+          qrCode: 'TICKETMETAL:abc123def456',
+          price: 80.00,
+          status: 'active',
+          purchasedAt: '2024-01-15T10:30:00'
+        },
+        {
+          id: 2,
+          eventTitle: 'DEATH METAL WORKSHOP',
+          date: '2024-03-20T14:00:00',
+          location: 'Studio Hell',
+          city: 'Rio de Janeiro',
+          state: 'RJ',
+          ticketNumber: 'TM00020001',
+          qrCode: 'TICKETMETAL:xyz789uvw012',
+          price: 60.00,
+          status: 'used',
+          purchasedAt: '2024-01-20T15:45:00'
+        }
+      ];
+      
+      setTickets(mockTickets);
+    } catch (error) {
+      console.error('Erro ao carregar ingressos:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -58,6 +77,14 @@ const MyTickets: React.FC = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-black to-gray-900 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,7 +106,7 @@ const MyTickets: React.FC = () => {
             <p className="text-gray-300 mb-4" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
               Você ainda não possui ingressos comprados
             </p>
-            <a href="/events" className="btn-primary">
+            <a href="/eventos" className="btn-primary">
               EXPLORAR EVENTOS
             </a>
           </div>

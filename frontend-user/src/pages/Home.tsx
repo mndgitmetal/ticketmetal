@@ -7,7 +7,7 @@ const Home: React.FC = () => {
   const featuredEvents = [
     {
       id: 1,
-      title: 'METAL FEST 2024',
+      title: 'METAL NEVER DIE FEST 2025',
       description: 'O maior festival de metal do ano com bandas lendárias e novas revelações do cenário underground.',
       date: '2024-03-15T20:00:00',
       location: 'Arena Underground',
@@ -72,7 +72,7 @@ const Home: React.FC = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                to="/events"
+                to="/eventos"
                 className="btn-primary text-lg py-4 px-8 flex items-center justify-center space-x-2"
               >
                 <span>EXPLORAR EVENTOS</span>
@@ -93,7 +93,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-gradient-to-r from-gray-900 to-black border-y border-red-500/30">
+      {/* <section className="py-16 bg-gradient-to-r from-gray-900 to-black border-y border-red-500/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
@@ -108,7 +108,7 @@ const Home: React.FC = () => {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Featured Events */}
       <section className="py-16 bg-gradient-to-b from-black to-gray-900">
@@ -171,7 +171,7 @@ const Home: React.FC = () => {
                       R$ {event.price.toFixed(2)}
                     </div>
                     <Link
-                      to={`/events/${event.id}`}
+                      to={`/eventos/${event.id}`}
                       className="btn-primary flex items-center space-x-2"
                     >
                       <span>VER DETALHES</span>
@@ -185,7 +185,7 @@ const Home: React.FC = () => {
 
           <div className="text-center mt-12">
             <Link
-              to="/events"
+              to="/eventos"
               className="btn-outline text-lg px-8 py-3"
             >
               VER TODOS OS EVENTOS
@@ -195,7 +195,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-gradient-to-r from-gray-900 to-black border-y border-red-500/30">
+      {/* <section className="py-16 bg-gradient-to-r from-gray-900 to-black border-y border-red-500/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-black metal-text mb-4">
@@ -244,7 +244,7 @@ const Home: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 };

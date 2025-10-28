@@ -8,8 +8,12 @@ services:
       - SUPABASE_KEY=${SUPABASE_KEY}
       - MERCADOPAGO_ACCESS_TOKEN=${MERCADOPAGO_ACCESS_TOKEN}
       - MERCADOPAGO_PUBLIC_KEY=${MERCADOPAGO_PUBLIC_KEY}
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - GCP_BUCKET_NAME=${GCP_BUCKET_NAME}
+      - GCP_CREDENTIALS_PATH=${GCP_CREDENTIALS_PATH}
     volumes:
       - ./backend:/app
+      - ./mnd-midias-2c0bfa9a103c.json:/app/mnd-midias-2c0bfa9a103c.json:ro
     depends_on:
       - db
 

@@ -117,3 +117,4 @@ venv.bak/
 # Generated files
 tickets/
 reports/
+mnd-midias-*.json

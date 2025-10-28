@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Eye, Edit, Trash2, Calendar, MapPin, Users, DollarSign } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { apiService } from './api.ts';
 
 interface Event {
   id: number;
@@ -9,19 +10,19 @@ interface Event {
   description: string;
   date: string;
   location: string;
+  address: string;
   city: string;
   state: string;
-  max_tickets: number;
   price: number;
+  max_tickets: number;
+  image_url?: string;
   is_active: boolean;
-  tickets_sold: number;
-  created_at: string;
+  tickets_sold?: number;
 }
 
 const Events: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchEvents();
@@ -29,53 +30,28 @@ const Events: React.FC = () => {
 
   const fetchEvents = async () => {
     try {
-      // Simulação de dados - em produção, fazer chamada para API
-      const mockEvents: Event[] = [
-        {
-          id: 1,
-          title: 'Festival de Música 2024',
-          description: 'O maior festival de música do ano',
-          date: '2024-03-15T20:00:00',
-          location: 'Parque da Cidade',
-          city: 'São Paulo',
-          state: 'SP',
-          max_tickets: 500,
-          price: 50.00,
-          is_active: true,
-          tickets_sold: 450,
-          created_at: '2024-01-15T10:00:00'
-        },
-        {
-          id: 2,
-          title: 'Workshop de Tecnologia',
-          description: 'Aprenda as últimas tendências em tecnologia',
-          date: '2024-03-20T14:00:00',
-          location: 'Centro de Convenções',
-          city: 'Rio de Janeiro',
-          state: 'RJ',
-          max_tickets: 150,
-          price: 30.00,
-          is_active: true,
-          tickets_sold: 120,
-          created_at: '2024-01-20T10:00:00'
-        },
-        {
-          id: 3,
-          title: 'Conferência de Negócios',
-          description: 'Networking e palestras sobre empreendedorismo',
-          date: '2024-03-25T09:00:00',
-          location: 'Hotel Plaza',
-          city: 'Belo Horizonte',
-          state: 'MG',
-          max_tickets: 300,
-          price: 40.00,
-          is_active: false,
-          tickets_sold: 200,
-          created_at: '2024-01-25T10:00:00'
-        }
-      ];
+      setLoading(true);
+      const eventsData = await apiService.getEvents();
       
-      setEvents(mockEvents);
+      const eventsWithStats = await Promise.all(
+        eventsData.map(async (event: Event) => {
+          try {
+            const stats = await apiService.getEventStats(event.id);
+            return {
+              ...event,
+              tickets_sold: stats.tickets_sold || 0,
+            };
+          } catch (error) {
+            console.error(`Erro ao buscar estatísticas do evento ${event.id}:`, error);
+            return {
+              ...event,
+              tickets_sold: 0,
+            };
+          }
+        })
+      );
+      
+      setEvents(eventsWithStats);
     } catch (error) {
       toast.error('Erro ao carregar eventos');
     } finally {
@@ -86,10 +62,11 @@ const Events: React.FC = () => {
   const handleDeleteEvent = async (eventId: number) => {
     if (window.confirm('Tem certeza que deseja excluir este evento?')) {
       try {
-        // Simulação de exclusão - em produção, fazer chamada para API
+        await apiService.deleteEvent(eventId);
         setEvents(events.filter(event => event.id !== eventId));
         toast.success('Evento excluído com sucesso!');
       } catch (error) {
+        console.error('Erro ao excluir evento:', error);
         toast.error('Erro ao excluir evento');
       }
     }
@@ -97,23 +74,41 @@ const Events: React.FC = () => {
 
   const toggleEventStatus = async (eventId: number) => {
     try {
-      // Simulação de toggle - em produção, fazer chamada para API
+      const event = events.find(e => e.id === eventId);
+      if (!event) return;
+      
+      const updatedEvent = { ...event, is_active: !event.is_active };
+      await apiService.updateEvent(eventId, updatedEvent);
+      
       setEvents(events.map(event => 
         event.id === eventId 
           ? { ...event, is_active: !event.is_active }
           : event
       ));
-      toast.success('Status do evento atualizado!');
+      
+      toast.success(`Evento ${updatedEvent.is_active ? 'ativado' : 'desativado'} com sucesso!`);
     } catch (error) {
-      toast.error('Erro ao atualizar status do evento');
+      console.error('Erro ao alterar status do evento:', error);
+      toast.error('Erro ao alterar status do evento');
     }
   };
 
-  const filteredEvents = events.filter(event =>
-    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    event.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    event.city.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(price);
+  };
 
   if (loading) {
     return (
@@ -125,6 +120,7 @@ const Events: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Eventos</h1>
@@ -139,148 +135,185 @@ const Events: React.FC = () => {
         </Link>
       </div>
 
-      {/* Filtros */}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="card">
+          <div className="flex items-center">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Calendar className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Total de Eventos</p>
+              <p className="text-2xl font-bold text-gray-900">{events.length}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="flex items-center">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <Users className="w-6 h-6 text-green-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Ingressos Vendidos</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {events.reduce((sum, event) => sum + (event.tickets_sold || 0), 0)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="flex items-center">
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <DollarSign className="w-6 h-6 text-yellow-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Receita Total</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {formatPrice(events.reduce((sum, event) => sum + (event.price * (event.tickets_sold || 0)), 0))}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="flex items-center">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <Calendar className="w-6 h-6 text-purple-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Eventos Ativos</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {events.filter(event => event.is_active).length}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Events Table */}
       <div className="card">
-        <div className="flex items-center space-x-4">
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Buscar eventos..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="input-field"
-            />
-          </div>
-          <div className="flex space-x-2">
-            <button className="btn-secondary">Todos</button>
-            <button className="btn-secondary">Ativos</button>
-            <button className="btn-secondary">Inativos</button>
-          </div>
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-medium text-gray-900">Lista de Eventos</h2>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Evento
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Data
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Local
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Preço
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Ingressos
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Ações
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {events.map((event) => (
+                <tr key={event.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-12 w-12">
+                        {event.image_url ? (
+                          <img
+                            className="h-12 w-12 rounded-lg object-cover"
+                            src={event.image_url}
+                            alt={event.title}
+                          />
+                        ) : (
+                          <div className="h-12 w-12 rounded-lg bg-gray-200 flex items-center justify-center">
+                            <Calendar className="w-6 h-6 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          {event.title}
+                        </div>
+                        <div className="text-sm text-gray-500 truncate max-w-xs">
+                          {event.description}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatDate(event.date)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center text-sm text-gray-900">
+                      <MapPin className="w-4 h-4 text-gray-400 mr-1" />
+                      {event.city}, {event.state}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatPrice(event.price)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div className="flex items-center">
+                      <Users className="w-4 h-4 text-gray-400 mr-1" />
+                      {event.tickets_sold || 0} / {event.max_tickets}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <button
+                      onClick={() => toggleEventStatus(event.id)}
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        event.is_active
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      {event.is_active ? 'Ativo' : 'Inativo'}
+                    </button>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex items-center space-x-2">
+                      <Link
+                        to={`/events/${event.id}`}
+                        className="p-2 text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                        title="Visualizar"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Link>
+                      <Link
+                        to={`/events/${event.id}/edit`}
+                        className="p-2 text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                        title="Editar"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Link>
+                      <button
+                        onClick={() => handleDeleteEvent(event.id)}
+                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                        title="Excluir"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-
-      {/* Lista de Eventos */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredEvents.map((event) => (
-          <div key={event.id} className="card hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {event.title}
-                </h3>
-                <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                  {event.description}
-                </p>
-              </div>
-              <span
-                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  event.is_active
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
-                }`}
-              >
-                {event.is_active ? 'Ativo' : 'Inativo'}
-              </span>
-            </div>
-
-            <div className="space-y-2 mb-4">
-              <div className="flex items-center text-sm text-gray-600">
-                <Calendar className="w-4 h-4 mr-2" />
-                {new Date(event.date).toLocaleDateString('pt-BR', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <MapPin className="w-4 h-4 mr-2" />
-                {event.location}, {event.city} - {event.state}
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <Users className="w-4 h-4 mr-2" />
-                {event.tickets_sold}/{event.max_tickets} ingressos vendidos
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <DollarSign className="w-4 h-4 mr-2" />
-                R$ {event.price.toFixed(2)}
-              </div>
-            </div>
-
-            {/* Barra de Progresso */}
-            <div className="mb-4">
-              <div className="flex justify-between text-sm text-gray-600 mb-1">
-                <span>Vendas</span>
-                <span>{Math.round((event.tickets_sold / event.max_tickets) * 100)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-blue-600 h-2 rounded-full"
-                  style={{
-                    width: `${(event.tickets_sold / event.max_tickets) * 100}%`
-                  }}
-                ></div>
-              </div>
-            </div>
-
-            {/* Ações */}
-            <div className="flex items-center justify-between">
-              <div className="flex space-x-2">
-                <Link
-                  to={`/events/${event.id}`}
-                  className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-                  title="Ver detalhes"
-                >
-                  <Eye className="w-4 h-4" />
-                </Link>
-                <Link
-                  to={`/events/${event.id}/edit`}
-                  className="p-2 text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
-                  title="Editar"
-                >
-                  <Edit className="w-4 h-4" />
-                </Link>
-                <button
-                  onClick={() => toggleEventStatus(event.id)}
-                  className={`p-2 rounded-lg transition-colors duration-200 ${
-                    event.is_active
-                      ? 'text-orange-600 hover:text-orange-700 hover:bg-orange-50'
-                      : 'text-green-600 hover:text-green-700 hover:bg-green-50'
-                  }`}
-                  title={event.is_active ? 'Desativar' : 'Ativar'}
-                >
-                  <Calendar className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleDeleteEvent(event.id)}
-                  className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200"
-                  title="Excluir"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {filteredEvents.length === 0 && (
-        <div className="text-center py-12">
-          <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Nenhum evento encontrado
-          </h3>
-          <p className="text-gray-600 mb-4">
-            {searchTerm ? 'Tente ajustar os filtros de busca' : 'Comece criando seu primeiro evento'}
-          </p>
-          {!searchTerm && (
-            <Link to="/events/new" className="btn-primary">
-              Criar Primeiro Evento
-            </Link>
-          )}
-        </div>
-      )}
     </div>
   );
 };

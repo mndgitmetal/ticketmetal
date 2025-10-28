@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, User, ShoppingCart, Menu, X } from 'lucide-react';
+import { Search, User } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext.tsx';
+import LogoLockup from './LogoLockup.tsx';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Simulação
+  const { user } = useAuth();
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/eventos?busca=${encodeURIComponent(searchTerm)}`);
+    }
   };
 
   return (
@@ -17,65 +22,45 @@ const Header: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-black metal-text text-red-400">TICKETMETAL</span>
+            <LogoLockup size="medium" variant="simple" />
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link
-              to="/events"
-              className="text-gray-300 hover:text-red-400 font-bold transition-all duration-300 hover:scale-105"
-              style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase', letterSpacing: '1px' }}
-            >
-              EVENTOS
-            </Link>
-            <Link
-              to="/about"
-              className="text-gray-300 hover:text-red-400 font-bold transition-all duration-300 hover:scale-105"
-              style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase', letterSpacing: '1px' }}
-            >
-              SOBRE
-            </Link>
-            <Link
-              to="/contact"
-              className="text-gray-300 hover:text-red-400 font-bold transition-all duration-300 hover:scale-105"
-              style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase', letterSpacing: '1px' }}
-            >
-              CONTATO
-            </Link>
-          </nav>
-
           {/* Search Bar */}
-          <div className="hidden lg:flex flex-1 max-w-md mx-8">
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-8">
             <div className="relative w-full">
               <Search className="w-5 h-5 text-red-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="BUSCAR EVENTOS..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-gray-900 border border-red-500/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-200 placeholder-gray-500"
                 style={{ fontFamily: 'Rajdhani, sans-serif' }}
               />
             </div>
-          </div>
+          </form>
 
           {/* User Actions */}
           <div className="flex items-center space-x-4">
-            {isLoggedIn ? (
-              <>
-                <Link
-                  to="/my-tickets"
-                  className="p-2 text-gray-300 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-all duration-300 hover:scale-110"
-                  title="MEUS INGRESSOS"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                </Link>
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gradient-to-r from-red-600 to-orange-600 rounded-full flex items-center justify-center metal-glow">
-                    <span className="text-white text-sm font-bold">U</span>
-                  </div>
-                  <span className="text-sm font-bold text-gray-300" style={{ fontFamily: 'Orbitron, monospace' }}>USUÁRIO</span>
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-red-600 to-orange-600 rounded-full flex items-center justify-center metal-glow">
+                  {user.avatar_url ? (
+                    <img 
+                      src={user.avatar_url} 
+                      alt={user.name}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  ) : (
+                    <span className="text-white text-sm font-bold">
+                      {user.name.charAt(0).toUpperCase()}
+                    </span>
+                  )}
                 </div>
-              </>
+                <span className="text-sm font-bold text-gray-300 hidden sm:block" style={{ fontFamily: 'Orbitron, monospace' }}>
+                  {user.name.toUpperCase()}
+                </span>
+              </div>
             ) : (
               <Link
                 to="/login"
@@ -85,61 +70,8 @@ const Header: React.FC = () => {
                 <span>ENTRAR</span>
               </Link>
             )}
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={toggleMenu}
-              className="md:hidden p-2 text-gray-300 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-all duration-300"
-            >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden border-t border-red-500/30 py-4 bg-gray-900/95 backdrop-blur-sm">
-            <div className="space-y-4">
-              <div className="px-4">
-                <div className="relative">
-                  <Search className="w-5 h-5 text-red-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                  <input
-                    type="text"
-                    placeholder="BUSCAR EVENTOS..."
-                    className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-red-500/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-200 placeholder-gray-500"
-                    style={{ fontFamily: 'Rajdhani, sans-serif' }}
-                  />
-                </div>
-              </div>
-              <nav className="space-y-2">
-                <Link
-                  to="/events"
-                  className="block px-4 py-2 text-gray-300 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-all duration-300"
-                  onClick={() => setIsMenuOpen(false)}
-                  style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase', letterSpacing: '1px' }}
-                >
-                  EVENTOS
-                </Link>
-                <Link
-                  to="/about"
-                  className="block px-4 py-2 text-gray-300 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-all duration-300"
-                  onClick={() => setIsMenuOpen(false)}
-                  style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase', letterSpacing: '1px' }}
-                >
-                  SOBRE
-                </Link>
-                <Link
-                  to="/contact"
-                  className="block px-4 py-2 text-gray-300 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-all duration-300"
-                  onClick={() => setIsMenuOpen(false)}
-                  style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase', letterSpacing: '1px' }}
-                >
-                  CONTATO
-                </Link>
-              </nav>
-            </div>
-          </div>
-        )}
       </div>
     </header>
   );

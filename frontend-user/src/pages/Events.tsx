@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Calendar, MapPin, Users, Star, Search, Filter } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Calendar, MapPin, Search } from 'lucide-react';
+import { apiService } from './api.ts';
 
 interface Event {
-  id: number;
+  id: string; // UUID para eventos_rock
   title: string;
   description: string;
   date: string;
@@ -16,101 +17,144 @@ interface Event {
   maxTickets: number;
   rating: number;
   category: string;
+  // Campos específicos para eventos_rock
+  titulo?: string;
+  data_formatada?: string;
+  imagem?: string;
+  link?: string;
+  link_compra?: string;
+  preco_min?: number;
+  preco_max?: number;
+  evento_gratuito?: boolean;
+  nome_local?: string;
+  endereco?: string;
+  slug?: string;
 }
 
+const cities = [
+  { slug: "todas", nome: "Todas as cidades" },
+  { slug: "belo-horizonte", nome: "Belo Horizonte" },
+  { slug: "sao-paulo", nome: "São Paulo" },
+  { slug: "rio-de-janeiro", nome: "Rio de Janeiro" },
+  { slug: "curitiba", nome: "Curitiba" },
+  { slug: "brasilia", nome: "Brasília" },
+  { slug: "porto-alegre", nome: "Porto Alegre" },
+  { slug: "recife", nome: "Recife" },
+  { slug: "salvador", nome: "Salvador" },
+];
+
 const Events: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const cityFilter = searchParams.get('cidade') || 'todas';
+  const initialSearch = searchParams.get('busca') || '';
+  
   const [events, setEvents] = useState<Event[]>([]);
+  const [allEvents, setAllEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('date');
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [dateFilter, setDateFilter] = useState('');
+  const [sortBy, setSortBy] = useState('date-asc');
 
+  // Atualiza o termo de busca quando a URL muda
   useEffect(() => {
-    fetchEvents();
-  }, []);
+    const buscaFromUrl = searchParams.get('busca') || '';
+    setSearchTerm(buscaFromUrl);
+  }, [searchParams]);
 
-  const fetchEvents = async () => {
+  // Função para gerar slug a partir de título e data
+  const generateSlug = (title: string, date?: string): string => {
+    let slug = title
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+      .replace(/[^a-z0-9\s-]/g, '') // Remove caracteres especiais
+      .replace(/\s+/g, '-') // Substitui espaços por hífens
+      .replace(/-+/g, '-') // Remove hífens duplicados
+      .trim();
+    
+    // Adiciona data se disponível (formato: YYYY-MM-DD)
+    if (date) {
+      try {
+        const eventDate = new Date(date);
+        const dateStr = eventDate.toISOString().split('T')[0]; // YYYY-MM-DD
+        slug = `${slug}-${dateStr}`;
+      } catch (e) {
+        console.log('Erro ao formatar data para slug:', e);
+      }
+    }
+    
+    return slug;
+  };
+
+  const fetchEvents = useCallback(async () => {
     try {
-      // Simulação de dados - em produção, fazer chamada para API
-      const mockEvents: Event[] = [
-        {
-          id: 1,
-          title: 'METAL FEST 2024',
-          description: 'O maior festival de metal do ano com bandas lendárias e novas revelações do cenário underground.',
-          date: '2024-03-15T20:00:00',
-          location: 'Arena Underground',
-          city: 'São Paulo',
-          state: 'SP',
-          price: 80.00,
-          image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=500',
-          ticketsSold: 450,
-          maxTickets: 500,
-          rating: 4.9,
-          category: 'metal'
-        },
-        {
-          id: 2,
-          title: 'DEATH METAL WORKSHOP',
-          description: 'Aprenda as técnicas mais brutais de guitarra e bateria com mestres do death metal.',
-          date: '2024-03-20T14:00:00',
-          location: 'Studio Hell',
-          city: 'Rio de Janeiro',
-          state: 'RJ',
-          price: 60.00,
-          image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=500',
-          ticketsSold: 120,
-          maxTickets: 150,
-          rating: 4.8,
-          category: 'workshop'
-        },
-        {
-          id: 3,
-          title: 'BLACK METAL CONFERENCE',
-          description: 'Discussões sobre filosofia, história e cultura do black metal com especialistas.',
-          date: '2024-03-25T09:00:00',
-          location: 'Crypt Venue',
-          city: 'Belo Horizonte',
-          state: 'MG',
-          price: 40.00,
-          image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500',
-          ticketsSold: 200,
-          maxTickets: 300,
-          rating: 4.7,
-          category: 'conference'
-        },
-        {
-          id: 4,
-          title: 'THRASH METAL NIGHT',
-          description: 'Uma noite inteira de thrash metal com as melhores bandas da cena.',
-          date: '2024-04-01T18:00:00',
-          location: 'Metal Bar',
-          city: 'São Paulo',
-          state: 'SP',
-          price: 35.00,
-          image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500',
-          ticketsSold: 80,
-          maxTickets: 200,
-          rating: 4.6,
-          category: 'show'
-        }
-      ];
+      setLoading(true);
+      const eventsData = await apiService.getEvents();
       
-      setEvents(mockEvents);
+      // Mapear campos de eventos_rock para o formato esperado pelo componente
+      const mappedEvents = eventsData.map((event: any) => {
+        const title = event.titulo || event.title;
+        const eventDate = event.data_formatada || event.date;
+        const slug = event.slug || generateSlug(title, eventDate);
+        
+        return {
+          id: event.id,
+          slug: slug,
+          title: title,
+          description: event.descricao || event.description || '',
+          date: eventDate,
+          location: event.nome_local || event.location || '',
+          city: event.cidade || event.city || '',
+          state: event.estado || event.state || '',
+          price: event.preco_min || event.preco_max || event.price || 0,
+          image: event.imagem || event.image || 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=500',
+          ticketsSold: 0, // Não temos esse dado para eventos externos
+          maxTickets: 999, // Placeholder
+          rating: 4.8, // Mock rating
+          category: 'metal', // Categoria padrão
+          link: event.link,
+          link_compra: event.link_compra,
+          evento_gratuito: event.evento_gratuito
+        };
+      });
+      
+      setAllEvents(mappedEvents);
     } catch (error) {
-      console.error('Erro ao carregar eventos:', error);
+      console.error('Erro ao buscar eventos:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const categories = [
-    { value: 'all', label: 'TODOS' },
-    { value: 'metal', label: 'METAL' },
-    { value: 'workshop', label: 'WORKSHOP' },
-    { value: 'conference', label: 'CONFERÊNCIA' },
-    { value: 'show', label: 'SHOW' },
-    { value: 'festival', label: 'FESTIVAL' }
-  ];
+  // Filtro por cidade
+  useEffect(() => {
+    if (cityFilter === 'todas') {
+      setEvents(allEvents);
+    } else {
+      const cityMap: { [key: string]: string } = {
+        'belo-horizonte': 'BELO HORIZONTE',
+        'sao-paulo': 'SÃO PAULO',
+        'rio-de-janeiro': 'RIO DE JANEIRO',
+        'curitiba': 'CURITIBA',
+        'brasilia': 'BRASÍLIA',
+        'porto-alegre': 'PORTO ALEGRE',
+        'recife': 'RECIFE',
+        'salvador': 'SALVADOR'
+      };
+      
+      const cityName = cityMap[cityFilter] || cityFilter.toUpperCase();
+      const filtered = allEvents.filter(event => 
+        event.city?.toUpperCase() === cityName || 
+        event.state?.toUpperCase() === cityName
+      );
+      setEvents(filtered);
+    }
+  }, [cityFilter, allEvents]);
+
+  useEffect(() => {
+    fetchEvents();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const filteredEvents = events.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -118,20 +162,16 @@ const Events: React.FC = () => {
                          event.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.city.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesCategory = selectedCategory === 'all' || event.category === selectedCategory;
+    const matchesDate = !dateFilter || event.date.startsWith(dateFilter);
     
-    return matchesSearch && matchesCategory;
+    return matchesSearch && matchesDate;
   });
 
   const sortedEvents = [...filteredEvents].sort((a, b) => {
-    switch (sortBy) {
-      case 'price':
-        return a.price - b.price;
-      case 'rating':
-        return b.rating - a.rating;
-      case 'date':
-      default:
-        return new Date(a.date).getTime() - new Date(b.date).getTime();
+    if (sortBy === 'date-asc') {
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    } else {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
     }
   });
 
@@ -158,9 +198,9 @@ const Events: React.FC = () => {
 
         {/* Filters */}
         <div className="card mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Search */}
-            <div className="md:col-span-2">
+            <div>
               <div className="relative">
                 <Search className="w-5 h-5 text-red-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                 <input
@@ -168,24 +208,41 @@ const Events: React.FC = () => {
                   placeholder="BUSCAR EVENTOS..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="input-field pl-10"
+                  className="input-field pl-10 w-full"
                 />
               </div>
             </div>
 
-            {/* Category Filter */}
+            {/* City Filter */}
             <div>
               <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="input-field"
+                value={cityFilter}
+                onChange={(e) => {
+                  const newCity = e.target.value;
+                  const newUrl = newCity === 'todas' 
+                    ? '/eventos' 
+                    : `/eventos?cidade=${newCity}`;
+                  window.location.href = newUrl;
+                }}
+                className="input-field w-full"
               >
-                {categories.map(category => (
-                  <option key={category.value} value={category.value}>
-                    {category.label}
+                {cities.map(city => (
+                  <option key={city.slug} value={city.slug}>
+                    {city.nome}
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Date Filter */}
+            <div>
+              <input
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="input-field w-full"
+                placeholder="FILTRAR POR DATA"
+              />
             </div>
 
             {/* Sort */}
@@ -193,11 +250,10 @@ const Events: React.FC = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="input-field"
+                className="input-field w-full"
               >
-                <option value="date">Data</option>
-                <option value="price">Preço</option>
-                <option value="rating">Avaliação</option>
+                <option value="date-asc">Mais Próximos</option>
+                <option value="date-desc">Mais Distantes</option>
               </select>
             </div>
           </div>
@@ -220,22 +276,12 @@ const Events: React.FC = () => {
                   alt={event.title}
                   className="w-full h-48 object-cover rounded-lg"
                 />
-                <div className="absolute top-4 right-4 bg-black/80 px-2 py-1 rounded-full flex items-center space-x-1 metal-border">
-                  <Star className="w-4 h-4 text-red-400 fill-current" />
-                  <span className="text-sm font-bold text-red-400">{event.rating}</span>
-                </div>
-                <div className="absolute bottom-4 left-4 bg-gradient-to-r from-red-600 to-orange-600 text-white px-2 py-1 rounded-full text-sm font-bold metal-glow">
-                  {categories.find(cat => cat.value === event.category)?.label}
-                </div>
               </div>
 
               <div className="space-y-3">
                 <h3 className="text-xl font-black text-red-400 line-clamp-2 metal-text">
                   {event.title}
                 </h3>
-                <p className="text-gray-300 line-clamp-2" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
-                  {event.description}
-                </p>
 
                 <div className="space-y-2">
                   <div className="flex items-center text-sm text-gray-300">
@@ -250,21 +296,28 @@ const Events: React.FC = () => {
                   </div>
                   <div className="flex items-center text-sm text-gray-300">
                     <MapPin className="w-4 h-4 mr-2 text-red-400" />
-                    {event.location}, {event.city} - {event.state}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-300">
-                    <Users className="w-4 h-4 mr-2 text-red-400" />
-                    {event.ticketsSold}/{event.maxTickets} ingressos vendidos
+                    {event.location ? `${event.location}, ` : ''}{event.city}{event.state ? ` - ${event.state}` : ''}
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-4">
-                  <div className="text-2xl font-black metal-text text-red-400">
-                    R$ {event.price.toFixed(2)}
+                <div className="pt-4">
+                  {/* Só mostra preço se não for R$ 0.00 */}
+                  <div className="mb-3">
+                    {event.price > 0 && !event.evento_gratuito && (
+                      <div className="text-2xl font-black metal-text text-red-400">
+                        R$ {event.price.toFixed(2)}
+                      </div>
+                    )}
+                    {event.evento_gratuito && (
+                      <div className="text-2xl font-black metal-text text-red-400">
+                        GRATUITO
+                      </div>
+                    )}
                   </div>
+                  {/* Sempre mostra "VER DETALHES" - o link de compra aparece na página interna */}
                   <Link
-                    to={`/events/${event.id}`}
-                    className="btn-primary"
+                    to={`/eventos/${event.slug}`}
+                    className="w-full btn-primary flex items-center justify-center"
                   >
                     VER DETALHES
                   </Link>
@@ -289,7 +342,6 @@ const Events: React.FC = () => {
             <button
               onClick={() => {
                 setSearchTerm('');
-                setSelectedCategory('all');
                 setSortBy('date');
               }}
               className="btn-primary"

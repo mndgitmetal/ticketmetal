@@ -21,7 +21,8 @@
     "react-hot-toast": "^2.4.0",
     "lucide-react": "^0.263.1",
     "clsx": "^1.2.1",
-    "tailwind-merge": "^1.10.0"
+    "tailwind-merge": "^1.10.0",
+    "@supabase/supabase-js": "^2.38.0"
   },
   "scripts": {
     "start": "react-scripts start",

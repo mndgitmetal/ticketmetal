@@ -146,7 +146,7 @@ const Checkout: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Evento não encontrado</h2>
-          <Link to="/events" className="btn-primary">
+          <Link to="/eventos" className="btn-primary">
             Voltar para Eventos
           </Link>
         </div>
