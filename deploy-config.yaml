@@ -1,0 +1,34 @@
+# Configuração de Deploy para Google Cloud Run
+# Arquivo: deploy-config.yaml
+
+# Configurações do projeto
+PROJECT_ID: mnd-midias
+REGION: us-central1
+SERVICE_NAME_BACKEND: ticketmetal-backend
+SERVICE_NAME_FRONTEND_USER: ticketmetal-frontend-user
+SERVICE_NAME_FRONTEND_ADMIN: ticketmetal-frontend-admin
+
+# URLs de produção (serão geradas após o deploy)
+BACKEND_URL: https://ticketmetal-backend-[hash]-uc.a.run.app
+FRONTEND_USER_URL: https://ticketmetal-frontend-user-[hash]-uc.a.run.app
+FRONTEND_ADMIN_URL: https://ticketmetal-frontend-admin-[hash]-uc.a.run.app
+
+# Configurações de recursos (otimizadas para custo)
+CPU: 1
+MEMORY: 512Mi
+MIN_INSTANCES: 0
+MAX_INSTANCES: 10
+TIMEOUT: 300s
+
+# Variáveis de ambiente para produção
+ENV_VARS:
+  SUPABASE_URL: "https://jaczaqqdtgyeczacppoi.supabase.co"
+  SUPABASE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphY3phcXFkdGd5ZWN6YWNwcG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwMTc1MDIsImV4cCI6MjA1ODU5MzUwMn0.zSxJ6HT9Gv3rbTDuoXlx_HiLB4HCpdVdXd9zXi0ySxE"
+  MERCADOPAGO_ACCESS_TOKEN: "TEST-6119343612748678-012817-796089becd94000a5a266cd8c30f11e8-78929697"
+  MERCADOPAGO_PUBLIC_KEY: "TEST-c1310ecb-4248-4c47-91bc-5dda4b91a794"
+  GCP_PROJECT_ID: "mnd-midias"
+  GCP_BUCKET_NAME: "ticketmetal-images"
+  GCP_CREDENTIALS_PATH: "/app/mnd-midias-2c0bfa9a103c.json"
+  NODE_ENV: "production"
+  PORT: "8080"
+

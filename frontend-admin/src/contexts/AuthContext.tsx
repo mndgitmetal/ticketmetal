@@ -1,8 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import toast from 'react-hot-toast';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-interface User {
-  id: number;
+interface AuthUser {
+  id: string;
   email: string;
   name: string;
   avatar_url?: string;
@@ -11,11 +10,12 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,63 +33,33 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Verificar se há usuário logado no localStorage
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setLoading(false);
-  }, []);
+  const [user, setUser] = useState<AuthUser | null>({
+    id: '1',
+    email: 'admin@ticketmetal.com',
+    name: 'Administrador',
+    provider: 'email',
+    is_admin: true
+  });
+  const [loading, setLoading] = useState(false);
 
   const login = async (email: string, password: string) => {
-    try {
-      // Simulação de login - em produção, integrar com Supabase Auth
-      const mockUser: User = {
-        id: 1,
-        email,
-        name: email.split('@')[0],
-        provider: 'email',
-        is_admin: true
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      toast.success('Login realizado com sucesso!');
-    } catch (error) {
-      toast.error('Erro ao fazer login');
-      throw error;
-    }
+    // Mock login for now
+    console.log('Login:', email, password);
+  };
+
+  const signUp = async (email: string, password: string, name: string) => {
+    // Mock signup for now
+    console.log('Signup:', email, password, name);
   };
 
   const signInWithGoogle = async () => {
-    try {
-      // Simulação de login com Google - em produção, integrar com Supabase Auth
-      const mockUser: User = {
-        id: 1,
-        email: 'admin@ticketmetal.com',
-        name: 'Administrador',
-        avatar_url: 'https://via.placeholder.com/150',
-        provider: 'google',
-        is_admin: true
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      toast.success('Login com Google realizado com sucesso!');
-    } catch (error) {
-      toast.error('Erro ao fazer login com Google');
-      throw error;
-    }
+    // Mock Google login for now
+    console.log('Google login');
   };
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
-    localStorage.removeItem('user');
-    toast.success('Logout realizado com sucesso!');
+    console.log('Logout');
   };
 
   const value = {
@@ -97,7 +67,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     loading,
     login,
     logout,
-    signInWithGoogle
+    signInWithGoogle,
+    signUp
   };
 
   return (

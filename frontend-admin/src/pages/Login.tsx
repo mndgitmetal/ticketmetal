@@ -6,24 +6,38 @@ import { useAuth } from '../contexts/AuthContext.tsx';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login, signInWithGoogle } = useAuth();
+  const { login, signInWithGoogle, signUp } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      if (email && password) {
-        await login(email, password);
-        navigate('/');
+      if (isSignUp) {
+        if (email && password && name) {
+          await signUp(email, password, name);
+          setIsSignUp(false);
+          setEmail('');
+          setPassword('');
+          setName('');
+        } else {
+          toast.error('Preencha todos os campos');
+        }
       } else {
-        toast.error('Preencha todos os campos');
+        if (email && password) {
+          await login(email, password);
+          navigate('/');
+        } else {
+          toast.error('Preencha todos os campos');
+        }
       }
     } catch (error) {
-      toast.error('Erro ao fazer login');
+      // Erro já tratado no AuthContext
     } finally {
       setLoading(false);
     }
@@ -52,8 +66,22 @@ const Login: React.FC = () => {
             <p className="text-gray-600">Painel Administrativo</p>
           </div>
 
-          {/* Formulário de Login */}
-          <form onSubmit={handleEmailLogin} className="space-y-6">
+          {/* Formulário de Login/Cadastro */}
+          <form onSubmit={handleEmailAuth} className="space-y-6">
+            {isSignUp && (
+              <div>
+                <label className="label">Nome</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="input-field"
+                  placeholder="Seu nome completo"
+                  required
+                />
+              </div>
+            )}
+
             <div>
               <label className="label">Email</label>
               <div className="relative">
@@ -89,10 +117,26 @@ const Login: React.FC = () => {
               disabled={loading}
               className="w-full btn-primary flex items-center justify-center space-x-2"
             >
-              <span>{loading ? 'Entrando...' : 'Entrar'}</span>
+              <span>{loading ? (isSignUp ? 'Criando...' : 'Entrando...') : (isSignUp ? 'Criar Conta' : 'Entrar')}</span>
               <ArrowRight className="w-5 h-5" />
             </button>
           </form>
+
+          {/* Link para alternar entre login e cadastro */}
+          <div className="text-center mt-4">
+            <button
+              type="button"
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setEmail('');
+                setPassword('');
+                setName('');
+              }}
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              {isSignUp ? 'Já tem uma conta? Faça login' : 'Não tem uma conta? Cadastre-se'}
+            </button>
+          </div>
 
           {/* Divisor */}
           <div className="my-6">

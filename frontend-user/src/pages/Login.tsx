@@ -1,28 +1,43 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Chrome, ArrowRight, User } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../contexts/AuthContext.tsx';
 
 const Login: React.FC = () => {
+  const navigate = useNavigate();
+  const { login, signInWithGoogle, signUp } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      // Simulação de login - em produção, integrar com Supabase Auth
-      if (email && password) {
-        toast.success('Login realizado com sucesso!');
-        // Redirecionar para página de ingressos ou home
-        window.location.href = '/my-tickets';
+      if (isSignUp) {
+        if (email && password && name) {
+          await signUp(email, password, name);
+          setIsSignUp(false);
+          setEmail('');
+          setPassword('');
+          setName('');
+        } else {
+          toast.error('Preencha todos os campos');
+        }
       } else {
-        toast.error('Preencha todos os campos');
+        if (email && password) {
+          await login(email, password);
+          navigate('/my-tickets');
+        } else {
+          toast.error('Preencha todos os campos');
+        }
       }
     } catch (error) {
-      toast.error('Erro ao fazer login');
+      // Erro já tratado no AuthContext
     } finally {
       setLoading(false);
     }
@@ -32,11 +47,10 @@ const Login: React.FC = () => {
     setLoading(true);
     
     try {
-      // Simulação de login com Google - em produção, integrar com Supabase Auth
-      toast.success('Login com Google realizado com sucesso!');
-      window.location.href = '/my-tickets';
+      await signInWithGoogle();
+      navigate('/my-tickets');
     } catch (error) {
-      toast.error('Erro ao fazer login com Google');
+      // Erro já tratado no AuthContext
     } finally {
       setLoading(false);
     }
@@ -63,7 +77,24 @@ const Login: React.FC = () => {
           </div>
 
           {/* Formulário de Login */}
-          <form onSubmit={handleEmailLogin} className="space-y-6">
+          <form onSubmit={handleEmailAuth} className="space-y-6">
+            {isSignUp && (
+              <div>
+                <label className="label">NOME</label>
+                <div className="relative">
+                  <User className="w-5 h-5 text-red-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="input-field pl-10"
+                    placeholder="SEU NOME COMPLETO"
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="label">EMAIL</label>
               <div className="relative">
@@ -99,10 +130,27 @@ const Login: React.FC = () => {
               disabled={loading}
               className="w-full btn-primary flex items-center justify-center space-x-2"
             >
-              <span>{loading ? 'ENTRANDO...' : 'ENTRAR'}</span>
+              <span>{loading ? (isSignUp ? 'CRIANDO...' : 'ENTRANDO...') : (isSignUp ? 'CRIAR CONTA' : 'ENTRAR')}</span>
               <ArrowRight className="w-5 h-5" />
             </button>
           </form>
+
+          {/* Link para alternar entre login e cadastro */}
+          <div className="text-center mt-4">
+            <button
+              type="button"
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setEmail('');
+                setPassword('');
+                setName('');
+              }}
+              className="text-red-400 hover:text-red-300 font-bold transition-colors duration-300"
+              style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase', letterSpacing: '1px' }}
+            >
+              {isSignUp ? 'JÁ TEM CONTA? FAÇA LOGIN' : 'NÃO TEM CONTA? CADASTRE-SE'}
+            </button>
+          </div>
 
           {/* Divisor */}
           <div className="my-6">

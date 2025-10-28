@@ -1,6 +1,6 @@
 {
   "name": "ticketmetal-user",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.4",
@@ -21,7 +21,8 @@
     "react-hot-toast": "^2.4.0",
     "lucide-react": "^0.263.1",
     "clsx": "^1.2.1",
-    "tailwind-merge": "^1.10.0"
+    "tailwind-merge": "^1.10.0",
+    "@supabase/supabase-js": "^2.38.0"
   },
   "scripts": {
     "start": "react-scripts start",

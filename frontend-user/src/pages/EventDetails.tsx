@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Calendar, MapPin, Users, Star, Clock, ArrowRight, Share2 } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Calendar, MapPin, Users, Clock, ArrowRight, Share2, Music } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { apiService } from './api.ts';
 
 interface Event {
-  id: number;
+  id: string; // UUID para eventos_rock
+  slug: string;
   title: string;
   description: string;
   date: string;
@@ -19,53 +21,182 @@ interface Event {
   rating: number;
   organizer: string;
   salesEndDate: string;
+  // Campos específicos para eventos_rock
+  titulo?: string;
+  data_formatada?: string;
+  imagem?: string;
+  link?: string;
+  link_compra?: string;
+  preco_min?: number;
+  preco_max?: number;
+  evento_gratuito?: boolean;
+  nome_local?: string;
+  endereco?: string;
+  descricao?: string;
+  artistas?: string;
+  generos?: string[];
+  hora?: string;
+  data_fim?: string;
+  fonte?: string;
 }
 
 const EventDetails: React.FC = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
+  const { id } = useParams(); // Fallback para UUID
+  const navigate = useNavigate();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
 
-  useEffect(() => {
-    fetchEvent();
-  }, [id]);
-
-  const fetchEvent = async () => {
+  const fetchEvent = useCallback(async () => {
     try {
-      // Simulação de dados - em produção, fazer chamada para API
-      const mockEvent: Event = {
-        id: 1,
-        title: 'METAL FEST 2024',
-        description: 'O maior festival de metal do ano com bandas lendárias e novas revelações do cenário underground. Uma experiência brutal com os melhores shows, food trucks metal, e muito mais headbanging!',
-        date: '2024-03-15T20:00:00',
-        location: 'Arena Underground',
-        address: 'Av. Metal, 666',
-        city: 'São Paulo',
-        state: 'SP',
-        price: 80.00,
-        image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800',
-        ticketsSold: 450,
-        maxTickets: 500,
-        rating: 4.9,
-        organizer: 'Metal Productions',
-        salesEndDate: '2024-03-14T23:59:59'
+      const identifier = slug || id;
+      if (!identifier) return;
+      
+      console.log('Buscando evento por identificador:', slug || id);
+      
+      // Função para gerar slug (copiada de Events.tsx)
+      const generateSlug = (title: string, date?: string): string => {
+        let slug = title
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .trim();
+        
+        // Adiciona data se disponível (formato: YYYY-MM-DD)
+        if (date) {
+          try {
+            const eventDate = new Date(date);
+            const dateStr = eventDate.toISOString().split('T')[0]; // YYYY-MM-DD
+            slug = `${slug}-${dateStr}`;
+          } catch (e) {
+            console.log('Erro ao formatar data para slug:', e);
+          }
+        }
+        
+        return slug;
       };
       
-      setEvent(mockEvent);
-    } catch (error) {
-      toast.error('Erro ao carregar evento');
+      // Buscar todos os eventos e encontrar o evento com slug ou ID correspondente
+      const allEvents = await apiService.getEvents(100, 0);
+      const eventData = allEvents.find((e: any) => {
+        const eventDate = e.data_formatada || e.date;
+        const eventSlug = e.slug || generateSlug(e.titulo || e.title, eventDate);
+        return slug ? eventSlug === slug : e.id === id;
+      });
+      
+      console.log('Dados do evento recebidos:', eventData);
+      
+      if (!eventData) {
+        toast.error('Evento não encontrado');
+        navigate('/eventos');
+        return;
+      }
+      
+      // Gerar slug se não existir
+      const title = eventData.titulo || eventData.title;
+      const eventDate = eventData.data_formatada || eventData.date;
+      const eventSlug = eventData.slug || generateSlug(title, eventDate);
+      
+      // Mapear campos de eventos_rock para o formato esperado
+      const mappedEvent = {
+        id: eventData.id,
+        slug: eventSlug,
+        title: title,
+        description: eventData.descricao || eventData.description || 'Evento de metal imperdível!',
+        date: eventData.data_formatada || eventData.date,
+        location: eventData.nome_local || eventData.location || 'Local a definir',
+        address: eventData.endereco || eventData.address || '',
+        city: eventData.cidade || eventData.city || '',
+        state: eventData.estado || eventData.state || '',
+        price: eventData.preco_min || eventData.preco_max || eventData.price || 0,
+        image: eventData.imagem || eventData.image || 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=500',
+        ticketsSold: 0,
+        maxTickets: 999,
+        rating: 4.8,
+        organizer: 'Metal Scene',
+        salesEndDate: eventData.data_formatada || eventData.date,
+        // Campos adicionais
+        link: eventData.link,
+        link_compra: eventData.link_compra,
+        evento_gratuito: eventData.evento_gratuito,
+        artistas: eventData.artistas,
+        generos: eventData.generos || [],
+        hora: eventData.hora,
+        data_fim: eventData.data_fim,
+        fonte: eventData.fonte
+      };
+      
+      console.log('Evento processado:', mappedEvent);
+      console.log('Data do evento:', mappedEvent.date);
+      setEvent(mappedEvent);
+    } catch (error: any) {
+      console.error('Erro ao carregar evento:', error);
+      
+      if (error.message === 'Evento não encontrado') {
+        toast.error('Evento não encontrado');
+        navigate('/eventos');
+      } else {
+        toast.error('Erro ao carregar evento');
+        navigate('/eventos');
+      }
     } finally {
       setLoading(false);
     }
+  }, [slug, id, navigate]);
+
+  useEffect(() => {
+    fetchEvent();
+  }, [fetchEvent]);
+
+  // Função para extrair o nome do site pela URL
+  const getSiteNameFromUrl = (url: string): string => {
+    try {
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname.toLowerCase();
+      
+      // Remove www. e extrai o domínio principal
+      const cleanHost = hostname.replace('www.', '');
+      const domainParts = cleanHost.split('.');
+      const siteName = domainParts[0];
+      
+      // Mapear domínios conhecidos para nomes mais amigáveis
+      const siteNameMap: { [key: string]: string } = {
+        'sympla': 'SYMPLA',
+        'sympla.com.br': 'SYMPLA',
+        'eventbrite': 'EVENTBRITE',
+        'eventbrite.com.br': 'EVENTBRITE',
+        'eventim': 'EVENTIM',
+        'eventim.com.br': 'EVENTIM',
+        'ingresso': 'INGRESSO RÁPIDO',
+        'ingressorapido.com.br': 'INGRESSO RÁPIDO',
+        'sujeitohomem': 'SUJEITO HOMEM',
+        'sujeitohomem.com.br': 'SUJEITO HOMEM',
+        'meucampo': 'MEU CAMPO',
+        'meucampo.com.br': 'MEU CAMPO'
+      };
+      
+      // Verifica se o domínio completo está no mapa
+      if (siteNameMap[cleanHost]) {
+        return siteNameMap[cleanHost];
+      }
+      
+      // Verifica se apenas o primeiro parte está no mapa
+      if (siteNameMap[siteName]) {
+        return siteNameMap[siteName];
+      }
+      
+      // Se não encontrar, capitaliza o nome do domínio
+      return siteName.toUpperCase();
+    } catch (error) {
+      console.error('Erro ao processar URL:', error);
+      return 'EVENTO EXTERNO';
+    }
   };
 
-  const handleBuyTickets = () => {
-    if (!event) return;
-    
-    const totalPrice = event.price * quantity;
-    toast.success(`${quantity} ingresso(s) adicionado(s) ao carrinho! Total: R$ ${totalPrice.toFixed(2)}`);
-  };
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -98,7 +229,7 @@ const EventDetails: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="text-center">
           <h2 className="text-2xl font-black metal-text text-red-400 mb-4">EVENTO NÃO ENCONTRADO</h2>
-          <Link to="/events" className="btn-primary">
+          <Link to="/eventos" className="btn-primary">
             VOLTAR PARA EVENTOS
           </Link>
         </div>
@@ -107,7 +238,6 @@ const EventDetails: React.FC = () => {
   }
 
   const ticketsAvailable = event.maxTickets - event.ticketsSold;
-  const occupancyRate = (event.ticketsSold / event.maxTickets) * 100;
   const isSalesActive = new Date() < new Date(event.salesEndDate);
 
   return (
@@ -118,7 +248,7 @@ const EventDetails: React.FC = () => {
           <div className="flex items-center space-x-2 text-sm text-gray-300">
             <Link to="/" className="hover:text-red-400 transition-colors duration-300" style={{ fontFamily: 'Rajdhani, sans-serif' }}>INÍCIO</Link>
             <span className="text-red-400">/</span>
-            <Link to="/events" className="hover:text-red-400 transition-colors duration-300" style={{ fontFamily: 'Rajdhani, sans-serif' }}>EVENTOS</Link>
+            <Link to="/eventos" className="hover:text-red-400 transition-colors duration-300" style={{ fontFamily: 'Rajdhani, sans-serif' }}>EVENTOS</Link>
             <span className="text-red-400">/</span>
             <span className="text-gray-300 metal-text">{event.title}</span>
           </div>
@@ -134,10 +264,6 @@ const EventDetails: React.FC = () => {
                   alt={event.title}
                   className="w-full h-64 md:h-80 object-cover rounded-lg"
                 />
-                <div className="absolute top-4 right-4 bg-black/80 px-3 py-1 rounded-full flex items-center space-x-1 metal-border">
-                  <Star className="w-4 h-4 text-red-400 fill-current" />
-                  <span className="text-sm font-bold text-red-400">{event.rating}</span>
-                </div>
                 <button
                   onClick={handleShare}
                   className="absolute top-4 left-4 bg-black/80 p-2 rounded-full hover:bg-black transition-all duration-300 metal-border"
@@ -159,14 +285,14 @@ const EventDetails: React.FC = () => {
                       <div>
                         <p className="text-sm text-gray-300 font-bold" style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase' }}>DATA E HORA</p>
                         <p className="font-bold text-gray-200" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
-                          {new Date(event.date).toLocaleDateString('pt-BR', {
+                          {event.date ? new Date(event.date).toLocaleDateString('pt-BR', {
                             weekday: 'long',
                             day: '2-digit',
                             month: 'long',
                             year: 'numeric',
                             hour: '2-digit',
                             minute: '2-digit'
-                          })}
+                          }) : 'Data não disponível'}
                         </p>
                       </div>
                     </div>
@@ -209,22 +335,43 @@ const EventDetails: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Ticket Availability */}
-                <div className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg p-4 metal-border">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-bold text-gray-300" style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase' }}>INGRESSOS DISPONÍVEIS</span>
-                    <span className="text-sm text-red-400 font-bold">{ticketsAvailable} de {event.maxTickets}</span>
+                {/* Additional Info (eventos_rock) */}
+                {(event.artistas || (event.generos && event.generos.length > 0) || event.hora) && (
+                  <div className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg p-4 metal-border">
+                    <h3 className="text-lg font-black metal-text text-red-400 mb-4">INFORMAÇÕES ADICIONAIS</h3>
+                    
+                    {event.artistas && (
+                      <div className="mb-3">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <Music className="w-4 h-4 text-red-400" />
+                          <p className="text-sm text-gray-300 font-bold" style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase' }}>ARTISTAS</p>
+                        </div>
+                        <p className="text-gray-200" style={{ fontFamily: 'Rajdhani, sans-serif' }}>{event.artistas}</p>
+                      </div>
+                    )}
+                    
+                    {event.generos && event.generos.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-sm text-gray-300 font-bold mb-2" style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase' }}>GÊNEROS</p>
+                        <div className="flex flex-wrap gap-2">
+                          {event.generos.map((genero, index) => (
+                            <span key={index} className="px-3 py-1 bg-red-600/20 border border-red-500 rounded-full text-sm text-red-400 font-bold">
+                              {genero}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {event.hora && (
+                      <div className="mb-3">
+                        <p className="text-sm text-gray-300 font-bold mb-1" style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase' }}>HORÁRIO</p>
+                        <p className="text-gray-200" style={{ fontFamily: 'Rajdhani, sans-serif' }}>{event.hora}</p>
+                      </div>
+                    )}
                   </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-red-600 to-orange-600 h-2 rounded-full"
-                      style={{ width: `${occupancyRate}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
-                    {occupancyRate.toFixed(1)}% dos ingressos vendidos
-                  </p>
-                </div>
+                )}
+
               </div>
             </div>
           </div>
@@ -232,53 +379,108 @@ const EventDetails: React.FC = () => {
           {/* Purchase Card */}
           <div className="lg:col-span-1">
             <div className="card sticky top-8">
-              <div className="text-center mb-6">
-                <div className="text-4xl font-black metal-text text-red-400 mb-2">
-                  R$ {event.price.toFixed(2)}
+              {/* Título do evento (se houver) */}
+              {event.title && (
+                <div className="text-center mb-6">
+                  <h2 className="text-xl font-black metal-text text-red-400">
+                    {event.title}
+                  </h2>
                 </div>
-                <p className="text-gray-300" style={{ fontFamily: 'Rajdhani, sans-serif' }}>POR INGRESSO</p>
-              </div>
+              )}
+
+              {/* Preço - somente para eventos internos com preço */}
+              {!(event.link_compra || event.link) && event.price > 0 && !event.evento_gratuito && (
+                <div className="text-center mb-6">
+                  <div className="text-4xl font-black metal-text text-red-400 mb-2">
+                    R$ {event.price.toFixed(2)}
+                  </div>
+                  <p className="text-gray-300" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
+                    POR INGRESSO
+                  </p>
+                </div>
+              )}
+
+              {/* Evento gratuito */}
+              {event.evento_gratuito && (
+                <div className="text-center mb-6">
+                  <div className="text-4xl font-black metal-text text-red-400 mb-2">
+                    GRATUITO
+                  </div>
+                </div>
+              )}
 
               {isSalesActive ? (
                 <div className="space-y-4">
-                  <div>
-                    <label className="label">Quantidade</label>
-                    <div className="flex items-center space-x-3">
-                      <button
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="w-10 h-10 border border-red-500 rounded-lg flex items-center justify-center hover:bg-red-500 hover:text-black transition-all duration-300 text-red-400 font-bold"
-                      >
-                        -
-                      </button>
-                      <span className="text-lg font-bold w-8 text-center text-gray-200">{quantity}</span>
-                      <button
-                        onClick={() => setQuantity(Math.min(ticketsAvailable, quantity + 1))}
-                        className="w-10 h-10 border border-red-500 rounded-lg flex items-center justify-center hover:bg-red-500 hover:text-black transition-all duration-300 text-red-400 font-bold"
-                      >
-                        +
-                      </button>
+                  {/* Quantidade - somente para eventos internos */}
+                  {!(event.link_compra || event.link) && (
+                    <div>
+                      <label className="label">Quantidade</label>
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                          className="w-10 h-10 border border-red-500 rounded-lg flex items-center justify-center hover:bg-red-500 hover:text-black transition-all duration-300 text-red-400 font-bold"
+                        >
+                          -
+                        </button>
+                        <span className="text-lg font-bold w-8 text-center text-gray-200">{quantity}</span>
+                        <button
+                          onClick={() => setQuantity(Math.min(ticketsAvailable, quantity + 1))}
+                          className="w-10 h-10 border border-red-500 rounded-lg flex items-center justify-center hover:bg-red-500 hover:text-black transition-all duration-300 text-red-400 font-bold"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <p className="text-sm text-gray-400 mt-1" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
+                        MÁXIMO: {ticketsAvailable} INGRESSOS
+                      </p>
                     </div>
-                    <p className="text-sm text-gray-400 mt-1" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
-                      MÁXIMO: {ticketsAvailable} INGRESSOS
-                    </p>
-                  </div>
+                  )}
 
-                  <div className="border-t border-red-500/30 pt-4">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="text-lg font-bold text-gray-300" style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase' }}>TOTAL:</span>
-                      <span className="text-2xl font-black metal-text text-red-400">
-                        R$ {(event.price * quantity).toFixed(2)}
-                      </span>
+                  {/* Total - somente para eventos internos */}
+                  {!(event.link_compra || event.link) && (
+                    <div className="border-t border-red-500/30 pt-4">
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="text-lg font-bold text-gray-300" style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase' }}>TOTAL:</span>
+                        <span className="text-2xl font-black metal-text text-red-400">
+                          R$ {(event.price * quantity).toFixed(2)}
+                        </span>
+                      </div>
+
+                      <Link
+                        to={`/checkout/${event.id}?quantity=${quantity}`}
+                        className="w-full btn-primary flex items-center justify-center space-x-2"
+                      >
+                        <span>COMPRAR INGRESSOS</span>
+                        <ArrowRight className="w-5 h-5" />
+                      </Link>
                     </div>
+                  )}
 
-                    <Link
-                      to={`/checkout/${event.id}?quantity=${quantity}`}
-                      className="w-full btn-primary flex items-center justify-center space-x-2"
-                    >
-                      <span>COMPRAR INGRESSOS</span>
-                      <ArrowRight className="w-5 h-5" />
-                    </Link>
-                  </div>
+                  {/* Botão com logo do site de vendas */}
+                  {(event.link_compra || event.link) && (
+                    <div className="space-y-4">
+                      {/* Extrai o nome do site pela URL */}
+                      <div className="text-center">
+                        <div className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg p-4 metal-border">
+                          <p className="text-xs text-gray-300 mb-2" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
+                            DISPONÍVEL EM:
+                          </p>
+                          <div className="text-xl font-black metal-text text-red-400">
+                            {event.fonte ? event.fonte.toUpperCase() : getSiteNameFromUrl(event.link_compra || event.link || '')}
+                          </div>
+                        </div>
+                      </div>
+                      <a
+                        href={event.link_compra || event.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full btn-primary flex items-center justify-center space-x-2"
+                      >
+                        <span>COMPRAR INGRESSOS</span>
+                        <ArrowRight className="w-5 h-5" />
+                      </a>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-center">
@@ -289,7 +491,7 @@ const EventDetails: React.FC = () => {
                 </div>
               )}
 
-              <div className="mt-6 pt-6 border-t border-red-500/30">
+              {/* <div className="mt-6 pt-6 border-t border-red-500/30">
                 <div className="text-center">
                   <p className="text-sm text-gray-400 mb-2" style={{ fontFamily: 'Rajdhani, sans-serif' }}>PAGAMENTO SEGURO</p>
                   <div className="flex justify-center space-x-2">
@@ -301,7 +503,7 @@ const EventDetails: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

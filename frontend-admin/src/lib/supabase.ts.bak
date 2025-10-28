@@ -1,0 +1,28 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://jaczaqqdtgyeczacppoi.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphY3phcXFkdGd5ZWN6YWNwcG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwMTc1MDIsImV4cCI6MjA1ODU5MzUwMn0.zSxJ6HT9Gv3rbTDuoXlx_HiLB4HCpdVdXd9zXi0ySxE';
+
+export const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Tipos para TypeScript
+export interface User {
+  id: string;
+  email: string;
+  user_metadata: {
+    name?: string;
+    avatar_url?: string;
+  };
+  app_metadata: {
+    provider?: string;
+  };
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  avatar_url?: string;
+  provider: string;
+  is_admin: boolean;
+}

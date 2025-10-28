@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { LogOut, Bell, Search } from 'lucide-react';
+import LogoLockup from './LogoLockup.tsx';
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -9,7 +10,10 @@ const Header: React.FC = () => {
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-6">
+            {/* Logo */}
+            <LogoLockup size="medium" variant="simple" />
+            
             <div className="relative">
               <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
               <input
