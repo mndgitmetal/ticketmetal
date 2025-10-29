@@ -31,7 +31,18 @@ app = FastAPI(title="TicketMetal API", version="1.0.0")
 # Configurar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://ticketmetal-frontend-user-981091216774.us-central1.run.app",
+        "https://ticketmetal-frontend-user-qcgtc4x47q-uc.a.run.app",
+        "https://ticketmetal-frontend-admin-981091216774.us-central1.run.app",
+        "https://ticketmetal-frontend-admin-qcgtc4x47q-uc.a.run.app",
+        "https://ticketmetal.com",
+        "https://www.ticketmetal.com",
+        "http://ticketmetal.com",
+        "http://www.ticketmetal.com",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

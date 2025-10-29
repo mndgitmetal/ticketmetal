@@ -59,7 +59,7 @@ cd backend
 
 # Build da imagem
 echo -e "${YELLOW}📦 Construindo imagem do backend...${NC}"
-docker build -f Dockerfile.prod -t gcr.io/$PROJECT_ID/$SERVICE_BACKEND:latest .
+docker buildx build --platform linux/amd64 -f Dockerfile.prod -t gcr.io/$PROJECT_ID/$SERVICE_BACKEND:latest . --load
 
 # Push da imagem
 echo -e "${YELLOW}📤 Enviando imagem para registry...${NC}"
@@ -77,7 +77,7 @@ gcloud run deploy $SERVICE_BACKEND \
     --min-instances 0 \
     --max-instances 10 \
     --timeout 300 \
-    --set-env-vars "SUPABASE_URL=https://jaczaqqdtgyeczacppoi.supabase.co,SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphY3phcXFkdGd5ZWN6YWNwcG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwMTc1MDIsImV4cCI6MjA1ODU5MzUwMn0.zSxJ6HT9Gv3rbTDuoXlx_HiLB4HCpdVdXd9zXi0ySxE,MERCADOPAGO_ACCESS_TOKEN=TEST-6119343612748678-012817-796089becd94000a5a266cd8c30f11e8-78929697,MERCADOPAGO_PUBLIC_KEY=TEST-c1310ecb-4248-4c47-91bc-5dda4b91a794,GCP_PROJECT_ID=mnd-midias,GCP_BUCKET_NAME=ticketmetal-images,GCP_CREDENTIALS_PATH=/app/mnd-midias-2c0bfa9a103c.json,PORT=8080"
+    --set-env-vars "SUPABASE_URL=https://jaczaqqdtgyeczacppoi.supabase.co,SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphY3phcXFkdGd5ZWN6YWNwcG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwMTc1MDIsImV4cCI6MjA1ODU5MzUwMn0.zSxJ6HT9Gv3rbTDuoXlx_HiLB4HCpdVdXd9zXi0ySxE,MERCADOPAGO_ACCESS_TOKEN=TEST-6119343612748678-012817-796089becd94000a5a266cd8c30f11e8-78929697,MERCADOPAGO_PUBLIC_KEY=TEST-c1310ecb-4248-4c47-91bc-5dda4b91a794,GCP_PROJECT_ID=mnd-midias,GCP_BUCKET_NAME=ticketmetal-images,GCP_CREDENTIALS_PATH=/app/mnd-midias-2c0bfa9a103c.json"
 
 BACKEND_URL=$(gcloud run services describe $SERVICE_BACKEND --region=$REGION --format="value(status.url)")
 echo -e "${GREEN}✅ Backend deployado: $BACKEND_URL${NC}"
@@ -90,7 +90,7 @@ cd frontend-user
 
 # Build da imagem
 echo -e "${YELLOW}📦 Construindo imagem do frontend user...${NC}"
-docker build -f Dockerfile.prod -t gcr.io/$PROJECT_ID/$SERVICE_FRONTEND_USER:latest .
+docker buildx build --platform linux/amd64 -f Dockerfile.prod -t gcr.io/$PROJECT_ID/$SERVICE_FRONTEND_USER:latest . --load
 
 # Push da imagem
 echo -e "${YELLOW}📤 Enviando imagem para registry...${NC}"
@@ -120,7 +120,7 @@ cd frontend-admin
 
 # Build da imagem
 echo -e "${YELLOW}📦 Construindo imagem do frontend admin...${NC}"
-docker build -f Dockerfile.prod -t gcr.io/$PROJECT_ID/$SERVICE_FRONTEND_ADMIN:latest .
+docker buildx build --platform linux/amd64 -f Dockerfile.prod -t gcr.io/$PROJECT_ID/$SERVICE_FRONTEND_ADMIN:latest . --load
 
 # Push da imagem
 echo -e "${YELLOW}📤 Enviando imagem para registry...${NC}"
