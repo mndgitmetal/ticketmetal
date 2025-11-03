@@ -49,7 +49,6 @@ const Events: React.FC = () => {
   const initialSearch = searchParams.get('busca') || '';
   
   const [events, setEvents] = useState<Event[]>([]);
-  const [allEvents, setAllEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [dateFilter, setDateFilter] = useState('');
@@ -61,41 +60,29 @@ const Events: React.FC = () => {
     setSearchTerm(buscaFromUrl);
   }, [searchParams]);
 
-  // Função para gerar slug a partir de título e data
-  const generateSlug = (title: string, date?: string): string => {
-    let slug = title
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-      .replace(/[^a-z0-9\s-]/g, '') // Remove caracteres especiais
-      .replace(/\s+/g, '-') // Substitui espaços por hífens
-      .replace(/-+/g, '-') // Remove hífens duplicados
-      .trim();
-    
-    // Adiciona data se disponível (formato: YYYY-MM-DD)
-    if (date) {
-      try {
-        const eventDate = new Date(date);
-        const dateStr = eventDate.toISOString().split('T')[0]; // YYYY-MM-DD
-        slug = `${slug}-${dateStr}`;
-      } catch (e) {
-        console.log('Erro ao formatar data para slug:', e);
-      }
-    }
-    
-    return slug;
-  };
-
   const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
-      const eventsData = await apiService.getEvents();
+      // Mapear cidade do filtro para formato esperado pelo backend
+      const cityMap: { [key: string]: string } = {
+        'belo-horizonte': 'BELO HORIZONTE',
+        'sao-paulo': 'SÃO PAULO',
+        'rio-de-janeiro': 'RIO DE JANEIRO',
+        'curitiba': 'CURITIBA',
+        'brasilia': 'BRASÍLIA',
+        'porto-alegre': 'PORTO ALEGRE',
+        'recife': 'RECIFE',
+        'salvador': 'SALVADOR'
+      };
+      
+      const cidadeParam = cityFilter !== 'todas' ? cityMap[cityFilter] || cityFilter.toUpperCase() : undefined;
+      const eventsData = await apiService.getEvents(500, 0, cidadeParam);
       
       // Mapear campos de eventos_rock para o formato esperado pelo componente
       const mappedEvents = eventsData.map((event: any) => {
         const title = event.titulo || event.title;
         const eventDate = event.data_formatada || event.date;
-        const slug = event.slug || generateSlug(title, eventDate);
+        const slug = event.slug; // Usar slug diretamente do banco
         
         return {
           id: event.id,
@@ -118,43 +105,18 @@ const Events: React.FC = () => {
         };
       });
       
-      setAllEvents(mappedEvents);
+      // Os eventos já vêm filtrados por cidade do backend
+      setEvents(mappedEvents);
     } catch (error) {
       console.error('Erro ao buscar eventos:', error);
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  // Filtro por cidade
-  useEffect(() => {
-    if (cityFilter === 'todas') {
-      setEvents(allEvents);
-    } else {
-      const cityMap: { [key: string]: string } = {
-        'belo-horizonte': 'BELO HORIZONTE',
-        'sao-paulo': 'SÃO PAULO',
-        'rio-de-janeiro': 'RIO DE JANEIRO',
-        'curitiba': 'CURITIBA',
-        'brasilia': 'BRASÍLIA',
-        'porto-alegre': 'PORTO ALEGRE',
-        'recife': 'RECIFE',
-        'salvador': 'SALVADOR'
-      };
-      
-      const cityName = cityMap[cityFilter] || cityFilter.toUpperCase();
-      const filtered = allEvents.filter(event => 
-        event.city?.toUpperCase() === cityName || 
-        event.state?.toUpperCase() === cityName
-      );
-      setEvents(filtered);
-    }
-  }, [cityFilter, allEvents]);
+  }, [cityFilter]);
 
   useEffect(() => {
     fetchEvents();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchEvents]);
 
   const filteredEvents = events.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -316,7 +278,7 @@ const Events: React.FC = () => {
                   </div>
                   {/* Sempre mostra "VER DETALHES" - o link de compra aparece na página interna */}
                   <Link
-                    to={`/eventos/${event.slug}`}
+                    to={event.slug ? `/eventos/${event.slug}` : `/events/${event.id}`}
                     className="w-full btn-primary flex items-center justify-center"
                   >
                     VER DETALHES
