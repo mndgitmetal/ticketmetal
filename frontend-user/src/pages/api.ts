@@ -40,12 +40,27 @@ class ApiService {
 
   // Métodos para Eventos
   // MODO AGREGADOR: Usa eventos_rock em vez de events (temporário enquanto não temos eventos próprios)
-  async getEvents(limit: number = 50, offset: number = 0) {
+  async getEvents(limit: number = 500, offset: number = 0, cidade?: string) {
     // NOVO ENDPOINT para eventos rock (agregador)
-    const response = await fetch(`${API_BASE_URL}/events/rock/?limit=${limit}&offset=${offset}`);
+    let url = `${API_BASE_URL}/events/rock/?limit=${limit}&offset=${offset}`;
+    if (cidade) {
+      url += `&cidade=${encodeURIComponent(cidade)}`;
+    }
+    const response = await fetch(url);
     
     if (!response.ok) {
       throw new Error('Erro ao buscar eventos');
+    }
+    
+    return response.json();
+  }
+
+  async getFeaturedEvents(limit: number = 3) {
+    // Endpoint para buscar eventos em destaque (com prioridade)
+    const response = await fetch(`${API_BASE_URL}/events/rock/featured/?limit=${limit}`);
+    
+    if (!response.ok) {
+      throw new Error('Erro ao buscar eventos em destaque');
     }
     
     return response.json();

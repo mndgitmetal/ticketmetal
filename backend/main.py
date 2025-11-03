@@ -31,7 +31,18 @@ app = FastAPI(title="TicketMetal API", version="1.0.0")
 # Configurar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://ticketmetal-frontend-user-981091216774.us-central1.run.app",
+        "https://ticketmetal-frontend-user-qcgtc4x47q-uc.a.run.app",
+        "https://ticketmetal-frontend-admin-981091216774.us-central1.run.app",
+        "https://ticketmetal-frontend-admin-qcgtc4x47q-uc.a.run.app",
+        "https://ticketmetal.com",
+        "https://www.ticketmetal.com",
+        "http://ticketmetal.com",
+        "http://www.ticketmetal.com",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -244,10 +255,19 @@ async def delete_event(event_id: int):
 
 # Rotas para Eventos Rock (Agregador de eventos externos)
 @app.get("/api/events/rock/")
-async def get_rock_events(limit: int = 50, offset: int = 0):
+async def get_rock_events(limit: int = 500, offset: int = 0, cidade: Optional[str] = None):
     """Lista eventos da tabela eventos_rock (agregador de eventos externos)"""
     try:
-        events = await supabase_client.get_rock_events(limit, offset)
+        events = await supabase_client.get_rock_events(limit, offset, cidade)
+        return events
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/events/rock/featured/")
+async def get_featured_rock_events(limit: int = 3):
+    """Lista eventos em destaque da tabela eventos_rock ordenados por prioridade"""
+    try:
+        events = await supabase_client.get_featured_rock_events(limit)
         return events
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

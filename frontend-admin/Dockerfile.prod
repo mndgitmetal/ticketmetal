@@ -14,6 +14,8 @@ RUN npm ci --only=production
 COPY . .
 
 # Build da aplicação
+ARG REACT_APP_API_BASE_URL=https://ticketmetal-backend-qcgtc4x47q-uc.a.run.app/api
+ENV REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL
 RUN npm run build
 
 # Estágio de produção com nginx

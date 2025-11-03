@@ -213,16 +213,26 @@ class SupabaseClient:
             raise e
     
     # Métodos para Eventos Rock (Agregador)
-    async def get_rock_events(self, limit: int = 50, offset: int = 0) -> List[Dict[str, Any]]:
+    async def get_rock_events(self, limit: int = 50, offset: int = 0, city: Optional[str] = None) -> List[Dict[str, Any]]:
         """Busca eventos da tabela eventos_rock (agregador de eventos externos)"""
         try:
             # Busca eventos que ainda vão acontecer (data_formatada >= agora)
             from datetime import datetime, timezone
             now = datetime.now(timezone.utc)
             
-            result = self.client.table('eventos_rock')\
+            query = self.client.table('eventos_rock')\
                 .select('*')\
-                .gte('data_formatada', now.isoformat())\
+                .gte('data_formatada', now.isoformat())
+            
+            # Filtrar por cidade se especificado
+            if city:
+                # Usar ilike para busca case-insensitive e parcial
+                # Isso permite encontrar "BELO HORIZONTE", "Belo Horizonte", etc.
+                # Remove espaços extras e normaliza para comparação
+                city_normalized = city.strip().upper()
+                query = query.ilike('cidade', f'%{city_normalized}%')
+            
+            result = query\
                 .order('data_formatada', desc=False)\
                 .range(offset, offset + limit - 1)\
                 .execute()
@@ -230,6 +240,28 @@ class SupabaseClient:
             return result.data if result.data else []
         except Exception as e:
             print(f"Erro ao buscar eventos rock: {e}")
+            raise e
+    
+    async def get_featured_rock_events(self, limit: int = 3) -> List[Dict[str, Any]]:
+        """Busca eventos em destaque da tabela eventos_rock ordenados por prioridade"""
+        try:
+            from datetime import datetime, timezone
+            now = datetime.now(timezone.utc)
+            
+            # Busca eventos com prioridade (prioridade IS NOT NULL)
+            # Ordena por prioridade (menor = maior prioridade) e depois por data
+            result = self.client.table('eventos_rock')\
+                .select('*')\
+                .gte('data_formatada', now.isoformat())\
+                .not_.is_('prioridade', 'null')\
+                .order('prioridade', desc=False)\
+                .order('data_formatada', desc=False)\
+                .limit(limit)\
+                .execute()
+            
+            return result.data if result.data else []
+        except Exception as e:
+            print(f"Erro ao buscar eventos em destaque: {e}")
             raise e
 
 # Instância global do cliente Supabase

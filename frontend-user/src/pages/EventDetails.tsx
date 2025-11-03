@@ -55,37 +55,11 @@ const EventDetails: React.FC = () => {
       
       console.log('Buscando evento por identificador:', slug || id);
       
-      // Função para gerar slug (copiada de Events.tsx)
-      const generateSlug = (title: string, date?: string): string => {
-        let slug = title
-          .toLowerCase()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[^a-z0-9\s-]/g, '')
-          .replace(/\s+/g, '-')
-          .replace(/-+/g, '-')
-          .trim();
-        
-        // Adiciona data se disponível (formato: YYYY-MM-DD)
-        if (date) {
-          try {
-            const eventDate = new Date(date);
-            const dateStr = eventDate.toISOString().split('T')[0]; // YYYY-MM-DD
-            slug = `${slug}-${dateStr}`;
-          } catch (e) {
-            console.log('Erro ao formatar data para slug:', e);
-          }
-        }
-        
-        return slug;
-      };
-      
       // Buscar todos os eventos e encontrar o evento com slug ou ID correspondente
       const allEvents = await apiService.getEvents(100, 0);
       const eventData = allEvents.find((e: any) => {
-        const eventDate = e.data_formatada || e.date;
-        const eventSlug = e.slug || generateSlug(e.titulo || e.title, eventDate);
-        return slug ? eventSlug === slug : e.id === id;
+        // Usar slug diretamente do banco, ou ID como fallback
+        return slug ? e.slug === slug : e.id === id;
       });
       
       console.log('Dados do evento recebidos:', eventData);
@@ -96,10 +70,10 @@ const EventDetails: React.FC = () => {
         return;
       }
       
-      // Gerar slug se não existir
+      // Usar slug diretamente do banco
       const title = eventData.titulo || eventData.title;
       const eventDate = eventData.data_formatada || eventData.date;
-      const eventSlug = eventData.slug || generateSlug(title, eventDate);
+      const eventSlug = eventData.slug; // Usar slug diretamente do banco
       
       // Mapear campos de eventos_rock para o formato esperado
       const mappedEvent = {

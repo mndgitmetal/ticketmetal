@@ -1,53 +1,51 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, MapPin, Users, ArrowRight, Star, Clock } from 'lucide-react';
+import { Calendar, MapPin, ArrowRight } from 'lucide-react';
+import { apiService } from './api.ts';
+
+interface Event {
+  id: string;
+  slug?: string;
+  titulo?: string;
+  title?: string;
+  descricao?: string;
+  description?: string;
+  data_formatada?: string;
+  date?: string;
+  nome_local?: string;
+  location?: string;
+  cidade?: string;
+  city?: string;
+  estado?: string;
+  state?: string;
+  preco_min?: number;
+  preco_max?: number;
+  price?: number;
+  imagem?: string;
+  image?: string;
+  evento_gratuito?: boolean;
+  link_compra?: string;
+  link?: string;
+}
 
 const Home: React.FC = () => {
-  // Dados mockados para demonstração
-  const featuredEvents = [
-    {
-      id: 1,
-      title: 'METAL NEVER DIE FEST 2025',
-      description: 'O maior festival de metal do ano com bandas lendárias e novas revelações do cenário underground.',
-      date: '2024-03-15T20:00:00',
-      location: 'Arena Underground',
-      city: 'São Paulo',
-      state: 'SP',
-      price: 80.00,
-      image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=500',
-      ticketsSold: 450,
-      maxTickets: 500,
-      rating: 4.9
-    },
-    {
-      id: 2,
-      title: 'DEATH METAL WORKSHOP',
-      description: 'Aprenda as técnicas mais brutais de guitarra e bateria com mestres do death metal.',
-      date: '2024-03-20T14:00:00',
-      location: 'Studio Hell',
-      city: 'Rio de Janeiro',
-      state: 'RJ',
-      price: 60.00,
-      image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=500',
-      ticketsSold: 120,
-      maxTickets: 150,
-      rating: 4.8
-    },
-    {
-      id: 3,
-      title: 'BLACK METAL CONFERENCE',
-      description: 'Discussões sobre filosofia, história e cultura do black metal com especialistas.',
-      date: '2024-03-25T09:00:00',
-      location: 'Crypt Venue',
-      city: 'Belo Horizonte',
-      state: 'MG',
-      price: 40.00,
-      image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500',
-      ticketsSold: 200,
-      maxTickets: 300,
-      rating: 4.7
-    }
-  ];
+  const [featuredEvents, setFeaturedEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFeaturedEvents = async () => {
+      try {
+        const events = await apiService.getFeaturedEvents(3);
+        setFeaturedEvents(events);
+      } catch (error) {
+        console.error('Erro ao buscar eventos em destaque:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedEvents();
+  }, []);
 
   const stats = [
     { number: '10K+', label: 'Eventos Realizados' },
@@ -122,66 +120,94 @@ const Home: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredEvents.map((event) => (
-              <div key={event.id} className="card hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                <div className="relative mb-4">
-                  <img
-                    src={event.image}
-                    alt={event.title}
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                  <div className="absolute top-4 right-4 bg-black/80 px-2 py-1 rounded-full flex items-center space-x-1 metal-border">
-                    <Star className="w-4 h-4 text-red-400 fill-current" />
-                    <span className="text-sm font-bold text-red-400">{event.rating}</span>
-                  </div>
-                </div>
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-600"></div>
+            </div>
+          ) : featuredEvents.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredEvents.map((event) => {
+                const title = event.titulo || event.title || '';
+                const description = event.descricao || event.description || '';
+                const eventDate = event.data_formatada || event.date || '';
+                const location = event.nome_local || event.location || '';
+                const city = event.cidade || event.city || '';
+                const state = event.estado || event.state || '';
+                const price = event.preco_min || event.preco_max || event.price || 0;
+                const image = event.imagem || event.image || 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=500';
+                const slug = event.slug;
+                
+                return (
+                  <div key={event.id} className="card hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                    <div className="relative mb-4">
+                      <img
+                        src={image}
+                        alt={title}
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                    </div>
 
-                <div className="space-y-3">
-                  <h3 className="text-xl font-black text-red-400 line-clamp-2 metal-text">
-                    {event.title}
-                  </h3>
-                  <p className="text-gray-300 line-clamp-2" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
-                    {event.description}
-                  </p>
+                    <div className="space-y-3">
+                      <h3 className="text-xl font-black text-red-400 line-clamp-2 metal-text">
+                        {title}
+                      </h3>
+                      {description && (
+                        <p className="text-gray-300 line-clamp-2" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
+                          {description}
+                        </p>
+                      )}
 
-                  <div className="space-y-2">
-                    <div className="flex items-center text-sm text-gray-300">
-                      <Calendar className="w-4 h-4 mr-2 text-red-400" />
-                      {new Date(event.date).toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </div>
-                    <div className="flex items-center text-sm text-gray-300">
-                      <MapPin className="w-4 h-4 mr-2 text-red-400" />
-                      {event.location}, {event.city} - {event.state}
-                    </div>
-                    <div className="flex items-center text-sm text-gray-300">
-                      <Users className="w-4 h-4 mr-2 text-red-400" />
-                      {event.ticketsSold}/{event.maxTickets} ingressos vendidos
+                      <div className="space-y-2">
+                        {eventDate && (
+                          <div className="flex items-center text-sm text-gray-300">
+                            <Calendar className="w-4 h-4 mr-2 text-red-400" />
+                            {new Date(eventDate).toLocaleDateString('pt-BR', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </div>
+                        )}
+                        {(location || city) && (
+                          <div className="flex items-center text-sm text-gray-300">
+                            <MapPin className="w-4 h-4 mr-2 text-red-400" />
+                            {location ? `${location}, ` : ''}{city}{state ? ` - ${state}` : ''}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between pt-4">
+                        {price > 0 && !event.evento_gratuito ? (
+                          <div className="text-2xl font-black text-red-400 metal-text">
+                            R$ {price.toFixed(2)}
+                          </div>
+                        ) : event.evento_gratuito ? (
+                          <div className="text-2xl font-black text-red-400 metal-text">
+                            GRATUITO
+                          </div>
+                        ) : null}
+                        <Link
+                          to={slug ? `/eventos/${slug}` : `/events/${event.id}`}
+                          className="btn-primary flex items-center space-x-2"
+                        >
+                          <span>VER DETALHES</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </Link>
+                      </div>
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between pt-4">
-                    <div className="text-2xl font-black text-red-400 metal-text">
-                      R$ {event.price.toFixed(2)}
-                    </div>
-                    <Link
-                      to={`/eventos/${event.id}`}
-                      className="btn-primary flex items-center space-x-2"
-                    >
-                      <span>VER DETALHES</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-300" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
+                Nenhum evento em destaque no momento
+              </p>
+            </div>
+          )}
 
           <div className="text-center mt-12">
             <Link
