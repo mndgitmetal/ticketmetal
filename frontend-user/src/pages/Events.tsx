@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Calendar, MapPin, Search } from 'lucide-react';
 import { apiService } from './api.ts';
+import EventImage from '../components/EventImage.tsx';
 
 interface Event {
   id: string; // UUID para eventos_rock
@@ -94,7 +95,11 @@ const Events: React.FC = () => {
           city: event.cidade || event.city || '',
           state: event.estado || event.state || '',
           price: event.preco_min || event.preco_max || event.price || 0,
-          image: event.imagem || event.image || 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=500',
+          image: (event.imagem && event.imagem.trim() !== '' && event.imagem !== 'null' && event.imagem !== 'undefined') 
+            ? event.imagem 
+            : (event.image && event.image.trim() !== '' && event.image !== 'null' && event.image !== 'undefined')
+            ? event.image
+            : '',
           ticketsSold: 0, // Não temos esse dado para eventos externos
           maxTickets: 999, // Placeholder
           rating: 4.8, // Mock rating
@@ -233,7 +238,7 @@ const Events: React.FC = () => {
           {sortedEvents.map((event) => (
             <div key={event.id} className="card hover:shadow-xl transition-all duration-300 transform hover:scale-105">
               <div className="relative mb-4">
-                <img
+                <EventImage
                   src={event.image}
                   alt={event.title}
                   className="w-full h-48 object-cover rounded-lg"

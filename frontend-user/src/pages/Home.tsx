@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin, ArrowRight } from 'lucide-react';
 import { apiService } from './api.ts';
+import EventImage from '../components/EventImage.tsx';
 
 interface Event {
   id: string;
@@ -134,13 +135,17 @@ const Home: React.FC = () => {
                 const city = event.cidade || event.city || '';
                 const state = event.estado || event.state || '';
                 const price = event.preco_min || event.preco_max || event.price || 0;
-                const image = event.imagem || event.image || 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=500';
+                const image = (event.imagem && event.imagem.trim() !== '' && event.imagem !== 'null' && event.imagem !== 'undefined') 
+                  ? event.imagem 
+                  : (event.image && event.image.trim() !== '' && event.image !== 'null' && event.image !== 'undefined')
+                  ? event.image
+                  : '';
                 const slug = event.slug;
                 
                 return (
                   <div key={event.id} className="card hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                     <div className="relative mb-4">
-                      <img
+                      <EventImage
                         src={image}
                         alt={title}
                         className="w-full h-48 object-cover rounded-lg"

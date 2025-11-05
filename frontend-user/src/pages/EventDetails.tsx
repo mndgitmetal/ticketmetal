@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Calendar, MapPin, Users, Clock, ArrowRight, Share2, Music } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiService } from './api.ts';
+import EventImage from '../components/EventImage.tsx';
 
 interface Event {
   id: string; // UUID para eventos_rock
@@ -87,7 +88,11 @@ const EventDetails: React.FC = () => {
         city: eventData.cidade || eventData.city || '',
         state: eventData.estado || eventData.state || '',
         price: eventData.preco_min || eventData.preco_max || eventData.price || 0,
-        image: eventData.imagem || eventData.image || 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=500',
+        image: (eventData.imagem && eventData.imagem.trim() !== '' && eventData.imagem !== 'null' && eventData.imagem !== 'undefined') 
+          ? eventData.imagem 
+          : (eventData.image && eventData.image.trim() !== '' && eventData.image !== 'null' && eventData.image !== 'undefined')
+          ? eventData.image
+          : '',
         ticketsSold: 0,
         maxTickets: 999,
         rating: 4.8,
@@ -233,7 +238,7 @@ const EventDetails: React.FC = () => {
           <div className="lg:col-span-2">
             <div className="card">
               <div className="relative mb-6">
-                <img
+                <EventImage
                   src={event.image}
                   alt={event.title}
                   className="w-full h-64 md:h-80 object-cover rounded-lg"
