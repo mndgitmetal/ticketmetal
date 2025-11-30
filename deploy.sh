@@ -107,7 +107,8 @@ gcloud run deploy $SERVICE_FRONTEND_USER \
     --cpu 1 \
     --min-instances 0 \
     --max-instances 10 \
-    --timeout 300
+    --timeout 300 \
+    --set-env-vars "REACT_APP_API_BASE_URL=$BACKEND_URL/api,REACT_APP_SUPABASE_URL=https://jaczaqqdtgyeczacppoi.supabase.co,REACT_APP_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphY3phcXFkdGd5ZWN6YWNwcG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwMTc1MDIsImV4cCI6MjA1ODU5MzUwMn0.zSxJ6HT9Gv3rbTDuoXlx_HiLB4HCpdVdXd9zXi0ySxE"
 
 FRONTEND_USER_URL=$(gcloud run services describe $SERVICE_FRONTEND_USER --region=$REGION --format="value(status.url)")
 echo -e "${GREEN}✅ Frontend User deployado: $FRONTEND_USER_URL${NC}"
@@ -137,7 +138,8 @@ gcloud run deploy $SERVICE_FRONTEND_ADMIN \
     --cpu 1 \
     --min-instances 0 \
     --max-instances 10 \
-    --timeout 300
+    --timeout 300 \
+    --set-env-vars "REACT_APP_API_BASE_URL=$BACKEND_URL/api,REACT_APP_SUPABASE_URL=https://jaczaqqdtgyeczacppoi.supabase.co,REACT_APP_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphY3phcXFkdGd5ZWN6YWNwcG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwMTc1MDIsImV4cCI6MjA1ODU5MzUwMn0.zSxJ6HT9Gv3rbTDuoXlx_HiLB4HCpdVdXd9zXi0ySxE"
 
 FRONTEND_ADMIN_URL=$(gcloud run services describe $SERVICE_FRONTEND_ADMIN --region=$REGION --format="value(status.url)")
 echo -e "${GREEN}✅ Frontend Admin deployado: $FRONTEND_ADMIN_URL${NC}"

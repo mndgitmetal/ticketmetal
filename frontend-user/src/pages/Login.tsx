@@ -31,7 +31,7 @@ const Login: React.FC = () => {
       } else {
         if (email && password) {
           await login(email, password);
-          navigate('/my-tickets');
+          // navigate('/my-tickets'); // Desabilitado temporariamente
         } else {
           toast.error('Preencha todos os campos');
         }
@@ -48,7 +48,7 @@ const Login: React.FC = () => {
     
     try {
       await signInWithGoogle();
-      navigate('/my-tickets');
+      // navigate('/my-tickets'); // Desabilitado temporariamente
     } catch (error) {
       // Erro já tratado no AuthContext
     } finally {
@@ -185,23 +185,6 @@ const Login: React.FC = () => {
                 CADASTRE-SE
               </a>
             </div>
-          </div>
-
-          {/* Demo */}
-          <div className="mt-8 p-4 bg-gradient-to-r from-red-900/20 to-orange-900/20 rounded-lg metal-border">
-            <h3 className="font-black metal-text text-red-400 mb-2">ACESSO DEMO</h3>
-            <p className="text-sm text-gray-300 mb-3" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
-              Use qualquer email e senha para testar o sistema
-            </p>
-            <button
-              onClick={() => {
-                setEmail('usuario@ticketmetal.com');
-                setPassword('123456');
-              }}
-              className="text-sm text-red-400 hover:text-red-300 underline transition-colors duration-300 font-bold" style={{ fontFamily: 'Orbitron, monospace', textTransform: 'uppercase' }}
-            >
-              PREENCHER DADOS DEMO
-            </button>
           </div>
         </div>
       </div>
